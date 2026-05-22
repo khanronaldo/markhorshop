@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { Product, DbVariant } from '../types';
 import { generateUUID } from '../lib/supabase';
-import { 
+import {  
   Plus, Trash2, Edit3, LogOut, Sparkles, DollarSign, Tag, Info, ListFilter, Check, X, ShieldAlert,
   Upload, Eye, ShoppingCart, HelpCircle, Layers, Activity, AlertTriangle, ChevronRight, Truck, Info as InfoIcon
 } from 'lucide-react';
@@ -20,25 +20,33 @@ export const Admin: React.FC = () => {
     uploadFile
   } = useProducts();
 
-  // Authentication Credentials States
+  // ==========================================
+  // 1. AUTH STATES
+  // ==========================================
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [loginMsg, setLoginMsg] = useState('');
 
-  // Dashboard Workspace Operations States
+  // ==========================================
+  // 2. LOADING & FEEDBACK STATES
+  // ==========================================
   const [actionLoading, setActionLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
-  // Editing and Adding Forms States
+  // ==========================================
+  // 3. VIEW CONTROLLERS
+  // ==========================================
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'editor' | 'overview'>('overview');
   const [previewMode, setPreviewMode] = useState<'card' | 'details' | 'none'>('card');
 
-  // Form primary descriptors
+  // ==========================================
+  // 4. FORM DATA STATE
+  // ==========================================
   const [formData, setFormData] = useState<Partial<Product>>({
     id: '',
     name: '',
@@ -50,19 +58,19 @@ export const Admin: React.FC = () => {
     colors: ['black', 'white'],
     badge: 'New',
     description: '',
-    shipping: 'Free Luxury Shipping (2-3 Business Days)',
+    shipping: 'Free Shipping (2-3 Business Days)',
     specifications: {
-      'Composition': '100% Combed Slub Cotton',
-      'Fit': 'Signature Tailored / Structured Contour',
+      'Composition': '100% Premium Cotton',
+      'Fit': 'Regular Fit',
       'Origin': 'Made in Pakistan'
     },
     gallery: []
   });
 
-  // Unique Temporary Variants Array (Workbench)
+  // ==========================================
+  // 5. PRODUCT VARIANTS STATE
+  // ==========================================
   const [variantsList, setVariantsList] = useState<DbVariant[]>([]);
-
-  // Variant Add Sub-form states
   const [tempVariant, setTempVariant] = useState<Partial<DbVariant>>({
     color: 'black',
     color_code: '#000000',
@@ -73,17 +81,21 @@ export const Admin: React.FC = () => {
     gallery_images: []
   });
 
-  // Sync state variables on editing item triggering
-  const handleEditClick = (p: Product) => {
-    setEditingId(p.id);
-    setFormData({ ...p });
-    setVariantsList(p.variants || []);
+  // ==========================================
+  // 6. EVENT HANDLERS
+  // ==========================================
+
+  // Edit button click handler
+  const handleEditClick = (product: Product) => {
+    setEditingId(product.id);
+    setFormData({ ...product });
+    setVariantsList(product.variants || []);
     setShowAddForm(true);
     setActiveWorkspaceTab('editor');
     window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
-  // Reset form to catalog standards
+  // Reset form fields
   const resetForm = () => {
     setFormData({
       id: '',
@@ -96,10 +108,10 @@ export const Admin: React.FC = () => {
       colors: [],
       badge: '',
       description: '',
-      shipping: 'Free Luxury Shipping (2-3 Business Days)',
+      shipping: 'Free Shipping (2-3 Business Days)',
       specifications: {
-        'Composition': '100% Egyptian Cotton twill',
-        'Fit': 'Signature Modern Tailored',
+        'Composition': '100% Premium Cotton',
+        'Fit': 'Regular Fit',
         'Origin': 'Made in Pakistan'
       },
       gallery: []
@@ -108,20 +120,22 @@ export const Admin: React.FC = () => {
     setEditingId(null);
   };
 
+  // Login Form Submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     setLoginMsg('');
+    
     if (!email || !password) {
-      setLoginError('⚠️ Please supply both administration email & access passcode.');
+      setLoginError('Error: Email and password are required.');
       return;
     }
 
-    const res = await loginAdmin(email, password, isSignUp);
-    if (!res.success) {
-      setLoginError(res.message);
+    const response = await loginAdmin(email, password, isSignUp);
+    if (!response.success) {
+      setLoginError(`Login Failed: ${response.message}`);
     } else {
-      setLoginMsg(res.message);
+      setLoginMsg(`Success: ${response.message}`);
       if (!isSignUp) {
         setEmail('');
         setPassword('');
@@ -129,64 +143,69 @@ export const Admin: React.FC = () => {
     }
   };
 
-  // Master file uploader triggering Supabase storage public buckets
+  // Main Product Image Uploader
   const handleMainUploader = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setIsUploading(true);
-      setFeedbackMsg('Uploading primary photography asset to secure cloud storage...');
-      const url = await uploadFile(e.target.files[0]);
-      if (url) {
-        setFormData(prev => ({ ...prev, image: url }));
-        setFeedbackMsg('✓ Primary photo successfully committed to storage.');
+      setFeedbackMsg('Uploading primary product image...');
+      const cloudUrl = await uploadFile(e.target.files[0]);
+      
+      if (cloudUrl) {
+        setFormData(prev => ({ ...prev, image: cloudUrl }));
+        setFeedbackMsg('Image uploaded successfully!');
       } else {
-        setFeedbackMsg('❌ Storage upload failed. Please ensure your bucket is public and connected.');
+        setFeedbackMsg('Upload failed. Please check your connection.');
       }
       setIsUploading(false);
     }
   };
 
+  // Gallery Images Uploader
   const handleGalleryUploader = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setIsUploading(true);
-      setFeedbackMsg('Uploading batch photography files to secure cloud assets...');
+      setFeedbackMsg('Uploading images to gallery...');
       const uploadedUrls: string[] = [];
+      
       for (let i = 0; i < e.target.files.length; i++) {
-        const url = await uploadFile(e.target.files[i]);
-        if (url) uploadedUrls.push(url);
+        const cloudUrl = await uploadFile(e.target.files[i]);
+        if (cloudUrl) uploadedUrls.push(cloudUrl);
       }
+      
       const currentGallery = formData.gallery || [];
       setFormData(prev => ({ ...prev, gallery: [...currentGallery, ...uploadedUrls] }));
-      setFeedbackMsg('✓ Gallery photographs uploaded successfully.');
+      setFeedbackMsg('Gallery images uploaded successfully!');
       setIsUploading(false);
     }
   };
 
-  // Sub-uploader for custom color variant images
+  // Variant Image Uploader
   const handleVariantUploader = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setIsUploading(true);
-      const url = await uploadFile(e.target.files[0]);
-      if (url) {
-        setTempVariant(prev => ({ ...prev, main_image: url }));
+      const cloudUrl = await uploadFile(e.target.files[0]);
+      if (cloudUrl) {
+        setTempVariant(prev => ({ ...prev, main_image: cloudUrl }));
       }
       setIsUploading(false);
     }
   };
 
-  // Variant assembly append triggers
+  // Add Variant to list
   const appendVariantToWorkbench = () => {
     if (!tempVariant.color) {
-      alert("Please give a distinct color label.");
+      alert("Validation Error: Color name is required.");
       return;
     }
+    
     const colorVal = tempVariant.color.trim();
-    const colorCode = tempVariant.color_code || '#c4a96e';
+    const colorCode = tempVariant.color_code || '#C4A96E';
     const sizeVal = tempVariant.size || 'M';
     const mainImg = tempVariant.main_image || formData.image || '';
 
-    const cleanVar: DbVariant = {
-      id: Math.random().toString(36).substring(2, 9),
-      product_id: formData.id || 'draft-product-id',
+    const pristineVariant: DbVariant = {
+      id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+      product_id: formData.id || 'DRAFT-ID',
       color: colorVal,
       color_code: colorCode,
       size: sizeVal,
@@ -196,15 +215,13 @@ export const Admin: React.FC = () => {
       gallery_images: tempVariant.gallery_images || []
     };
 
-    setVariantsList(prev => [...prev, cleanVar]);
+    setVariantsList(prev => [...prev, pristineVariant]);
 
-    // Update global colors array in form if needed
     const existingColors = formData.colors || [];
     if (!existingColors.includes(colorVal.toLowerCase())) {
       setFormData(prev => ({ ...prev, colors: [...existingColors, colorVal.toLowerCase()] }));
     }
 
-    // Reset subform
     setTempVariant({
       color: colorVal,
       color_code: colorCode,
@@ -220,28 +237,23 @@ export const Admin: React.FC = () => {
     setVariantsList(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Master product save trigger
+  // Save/Update Product
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const finalProductId = editingId ? formData.id : (formData.id || generateUUID());
 
     if (!finalProductId || !formData.name || !formData.price || !formData.image) {
-      setFeedbackMsg('⚠️ Please fill in all required primary fields (Name, Price, and Image).');
+      setFeedbackMsg('Error: Product Name, Price, and Image are required.');
       return;
     }
 
     setActionLoading(true);
     setFeedbackMsg('');
 
-    // Ensure colors matches color variants built
     const distinctColors = Array.from(new Set(variantsList.map(v => v.color.toLowerCase())));
     const finalColors = distinctColors.length > 0 ? distinctColors : (formData.colors || ['black']);
-
-    const finalVariants = variantsList.map(v => ({
-      ...v,
-      product_id: finalProductId
-    }));
+    const finalVariants = variantsList.map(v => ({ ...v, product_id: finalProductId }));
 
     const productPayload: Product = {
       id: finalProductId.trim(),
@@ -253,47 +265,48 @@ export const Admin: React.FC = () => {
       sizes: formData.sizes && formData.sizes.length > 0 ? formData.sizes : ['S', 'M', 'L', 'XL'],
       colors: finalColors,
       badge: formData.badge || undefined,
-      description: formData.description || 'Premium attire piece from Markhor Collections flagship workshop.',
-      shipping: formData.shipping || 'Free Luxury Shipping (2-3 Business Days)',
+      description: formData.description || 'Premium product from Markhor Collections.',
+      shipping: formData.shipping || 'Free Shipping (2-3 Business Days)',
       specifications: formData.specifications || {
-        'Composition': '100% Cotton',
+        'Composition': '100% Premium Cotton',
         'Origin': 'Made in Pakistan'
       },
       gallery: formData.gallery || []
     };
 
     if (editingId) {
-      const res = await updateProduct(editingId, productPayload, finalVariants);
-      if (res.success) {
-        setFeedbackMsg('✓ Product updated on interactive servers successfully!');
+      const response = await updateProduct(editingId, productPayload, finalVariants);
+      if (response.success) {
+        setFeedbackMsg('✓ Success: Product updated successfully.');
         resetForm();
         setShowAddForm(false);
         setActiveWorkspaceTab('overview');
       } else {
-        setFeedbackMsg(`❌ Save failed: ${res.message}`);
+        setFeedbackMsg(`Error: Update failed: ${response.message}`);
       }
     } else {
-      const res = await addProduct(productPayload, finalVariants);
-      if (res.success) {
-        setFeedbackMsg('✓ New product successfully registered and live on catalogs!');
+      const response = await addProduct(productPayload, finalVariants);
+      if (response.success) {
+        setFeedbackMsg('✓ Success: Product added successfully.');
         resetForm();
         setShowAddForm(false);
         setActiveWorkspaceTab('overview');
       } else {
-        setFeedbackMsg(`❌ Save failed: ${res.message}`);
+        setFeedbackMsg(`Error: Failed to add product: ${response.message}`);
       }
     }
     setActionLoading(false);
   };
 
+  // Delete Product
   const handleDeleteClick = async (id: string) => {
-    if (window.confirm('⚠️ Are you sure you want to completely purge this luxury garment from active catalogs?')) {
+    if (window.confirm('Are you sure you want to permanently delete this product?')) {
       setActionLoading(true);
-      const res = await deleteProduct(id);
-      if (res.success) {
-        setFeedbackMsg('✓ Product successfully wiped out from database.');
+      const response = await deleteProduct(id);
+      if (response.success) {
+        setFeedbackMsg('✓ Success: Product deleted successfully.');
       } else {
-        setFeedbackMsg(`❌ Deletion failed: ${res.message}`);
+        setFeedbackMsg(`Error: Deletion failed: ${response.message}`);
       }
       setActionLoading(false);
     }
@@ -308,7 +321,7 @@ export const Admin: React.FC = () => {
     }
   };
 
-  // Safe dashboard statistics
+  // Calculations for dashboard counters
   const totalStockCount = products.reduce((acc, p) => acc + (p.stock || 50), 0) + variantsList.reduce((acc, v) => acc + v.stock, 0);
   const outOfStockItems = products.filter(p => (p.stock || 0) <= 0 && (!p.variants || p.variants.length === 0));
   const lowStockAlerts = products.filter(p => {
@@ -318,88 +331,81 @@ export const Admin: React.FC = () => {
     return (p.stock || 50) < 10;
   });
 
-  // SECURE AUTH CONTROLLERS GATES
+  // ==========================================
+  // 7. LOGIN INTERFACE (UI)
+  // ==========================================
   if (!adminToken) {
     return (
-      <div className="bg-[#FAF9F6] text-[#111111] min-h-[90vh] flex items-center justify-center px-4 py-20">
-        <div className="bg-white border border-[#111111]/5 rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-          {/* Accent Gold Stripe */}
-          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#AA771C]" />
+      <div className="bg-[#0B0B0A] text-[#F5F5F3] min-h-screen flex items-center justify-center px-6 py-24 selection:bg-[#BF953F] selection:text-black">
+        <div className="bg-[#121211] border border-neutral-800/60 rounded-3xl p-10 max-w-md w-full shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] relative overflow-hidden backdrop-blur-md">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#BF953F] to-transparent opacity-80" />
           
-          <div className="text-center mb-8 mt-4">
-            <span className="text-[10px] tracking-[0.3em] font-sans font-bold text-[#BF953F] uppercase block mb-2">
-              MARKHOR ATELIER CONTROL PANEL
+          <div className="text-center mb-10 mt-2">
+            <span className="text-[10px] tracking-[0.4em] font-sans font-bold text-[#BF953F] uppercase block mb-3">
+              MARKHOR COLLECTIONS • ADMIN PANEL
             </span>
-            <h2 className="font-serif text-3xl font-light text-[#111111] tracking-tight">
-              Owner Desk Login
+            <h2 className="font-serif text-3xl font-extralight text-white tracking-tight">
+              Admin Login
             </h2>
-            <p className="text-[11px] text-neutral-400 font-serif italic max-w-[280px] mx-auto mt-2">
-              Secure authentication via Supabase Auth services to write catalog overrides.
+            <p className="text-[11px] text-neutral-400 font-sans tracking-wide max-w-[300px] mx-auto mt-3 leading-relaxed">
+              Log in to manage your products, orders, and website stock inventory.
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-4 font-sans text-left">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase tracking-wider font-bold text-neutral-400">
-                Administration Email
+          <form onSubmit={handleLogin} className="flex flex-col gap-6 font-sans text-left">
+            <div className="flex flex-col gap-2">
+              <label className="text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-400 pl-1">
+                Username / Email Address
               </label>
               <input 
                 type="email" 
-                placeholder="owner@markhordesks.pk" 
+                placeholder="admin@markhorcollections.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/10 transition-all font-mono"
+                className="w-full text-xs text-white bg-[#1A1A19] border border-neutral-800 rounded-xl py-3.5 px-4 outline-none focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/10 transition-all font-mono tracking-wide"
               />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase tracking-wider font-bold text-neutral-400">
-                Owner Access Passcode
+            <div className="flex flex-col gap-2">
+              <label className="text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-400 pl-1">
+                Password
               </label>
               <input 
                 type="password" 
-                placeholder="••••••••" 
+                placeholder="••••••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/10 transition-all font-mono"
+                className="w-full text-xs text-white bg-[#1A1A19] border border-neutral-800 rounded-xl py-3.5 px-4 outline-none focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/10 transition-all font-mono tracking-wide"
               />
             </div>
 
             {loginError && (
-              <div className="text-[11px] text-red-600 bg-red-50 rounded-lg p-3 text-center border border-red-200/45">
-                {loginError}
+              <div className="text-[11px] text-red-400 bg-red-950/20 rounded-xl p-3.5 text-center border border-red-900/30 font-mono tracking-tight">
+                ✕ {loginError}
               </div>
             )}
 
             {loginMsg && (
-              <div className="text-[11px] text-emerald-600 bg-emerald-50 rounded-lg p-3 text-center border border-emerald-200/45">
-                {loginMsg}
+              <div className="text-[11px] text-[#FCF6BA] bg-amber-950/20 rounded-xl p-3.5 text-center border border-[#BF953F]/20 font-mono tracking-tight">
+                ✓ {loginMsg}
               </div>
             )}
 
             <button
               type="submit"
-              className="py-3 mt-2 rounded bg-[#111111] text-[#FCF6BA] text-[10px] font-bold tracking-widest uppercase hover:bg-black transition-all cursor-pointer shadow-md"
+              className="py-4 mt-2 rounded-xl bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#AA771C] text-black text-[10px] font-black tracking-[0.25em] uppercase hover:brightness-110 transition-all cursor-pointer shadow-lg active:scale-[0.99]"
             >
-              {isSignUp ? 'REGISTER DIRECT OWNER ACCOUNT' : 'AUTHENTICATE SYSTEM'}
+              {isSignUp ? 'REGISTER ACCOUNT' : 'LOGIN'}
             </button>
 
-            <div className="text-center mt-3 border-t border-neutral-100 pt-4">
+            <div className="text-center mt-2 border-t border-neutral-900 pt-5">
               <button 
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-xs text-[#BF953F] underline font-medium hover:text-black cursor-pointer bg-transparent border-0"
+                className="text-xs text-neutral-400 hover:text-[#BF953F] transition-colors cursor-pointer bg-transparent border-0 font-light tracking-wide"
               >
-                {isSignUp ? "Already have credentials? Sign In" : "Need to register custom credentials? Sign Up"}
+                {isSignUp ? "Already have an account? Login" : "Need a new account? Register"}
               </button>
-            </div>
-
-            {/* Informative credentials card */}
-            <div className="bg-[#FAF9F6] border border-neutral-200/50 rounded-lg p-3.5 mt-2 text-[10px] text-neutral-500 leading-relaxed font-light flex gap-2">
-              <ShieldAlert className="w-5 h-5 text-[#BF953F] flex-shrink-0" />
-              <div>
-                <strong>Sandbox Credentials:</strong> The database permits direct auth code testing using passcodes: <code className="bg-neutral-200 px-1 py-0.5 rounded text-black font-semibold">markhor2026</code>, <code className="bg-neutral-200 px-1 py-0.5 rounded text-black font-semibold">admin123</code>.
-              </div>
             </div>
           </form>
         </div>
@@ -407,207 +413,209 @@ export const Admin: React.FC = () => {
     );
   }
 
-  // ACTIVE LOGGED WORKSPACE BOARD
+  // ==========================================
+  // 8. MAIN ADMIN DASHBOARD INTERFACE
+  // ==========================================
   return (
-    <div className="bg-[#FAF9F6] text-[#111111] min-h-screen">
+    <div className="bg-[#FAF9F6] text-[#111111] min-h-screen selection:bg-[#BF953F] selection:text-white antialiased">
       
-      {/* HEADER CONTROLS BANNER */}
-      <header className="bg-white border-b border-neutral-200 py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      {/* NAVBAR */}
+      <header className="bg-white border-b border-neutral-200/80 py-12 px-6 sm:px-8 lg:px-12 backdrop-blur-md sticky top-0 z-40 bg-white/95">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="text-left">
-            <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-1.5 block">
-              SECURE SUPABASE CONSOLE DESK
+            <span className="text-[10px] tracking-[0.35em] uppercase text-[#BF953F] font-black mb-2 block">
+              MARKHOR COLLECTIONS CONTROL INTERFACE
             </span>
-            <h1 className="font-serif text-3xl sm:text-4xl font-light tracking-tight text-[#111111]">
-              Owner Atelier Dashboard
+            <h1 className="font-serif text-3xl sm:text-5xl font-extralight tracking-tight text-neutral-900">
+              Admin Dashboard
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-400 font-serif italic mt-1">
-              Active Session: <strong className="text-neutral-600 font-bold">{adminUser?.email || 'System Owner'}</strong>
+            <p className="text-xs sm:text-sm text-neutral-400 font-serif italic mt-2 flex items-center gap-1.5">
+              Logged in as: <strong className="text-neutral-700 font-medium not-italic font-sans bg-neutral-100 px-2 py-0.5 rounded-md">{adminUser?.email || 'Administrator'}</strong>
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-4 w-full md:w-auto">
             <button
               onClick={() => { 
                 setShowAddForm(!showAddForm); 
                 resetForm(); 
                 setActiveWorkspaceTab(showAddForm ? 'overview' : 'editor');
               }}
-              className="px-5 py-3 rounded bg-[#111111] text-[#FCF6BA] text-[10px] font-bold tracking-widest uppercase hover:bg-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+              className="px-6 py-3.5 rounded-xl bg-neutral-950 text-[#FCF6BA] text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xl active:scale-95 flex-1 sm:flex-none"
             >
-              {showAddForm ? <X className="w-4 h-4 text-red-500" /> : <Plus className="w-4 h-4 text-[#C9A84C]" />}
-              {showAddForm ? 'CANCEL WORKBENCH' : 'ADD NEW GARMENT'}
+              {showAddForm ? <X className="w-4 h-4 text-red-400" /> : <Plus className="w-4 h-4 text-[#C9A84C]" />}
+              {showAddForm ? 'CLOSE FORM' : 'ADD NEW PRODUCT'}
             </button>
 
             <button
               onClick={logoutAdmin}
-              className="px-5 py-3 rounded bg-[#FAF9F6] text-neutral-400 text-[10px] font-bold tracking-widest uppercase hover:bg-neutral-100 hover:text-[#111111] border border-neutral-200 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-6 py-3.5 rounded-xl bg-white text-neutral-500 text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-neutral-50 hover:text-red-600 border border-neutral-250 transition-all cursor-pointer flex items-center justify-center gap-2 flex-1 sm:flex-none"
             >
-              <LogOut className="w-4 h-4" /> LOCK SESSION
+              <LogOut className="w-4 h-4" /> LOGOUT
             </button>
           </div>
         </div>
       </header>
 
-      {/* DASHBOARD TAB NAVIGATION BAR */}
-      <div className="bg-white border-b border-neutral-150">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6">
+      {/* TABS CONTROLLER */}
+      <div className="bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex gap-8">
           <button
             onClick={() => setActiveWorkspaceTab('overview')}
-            className={`py-4 text-xs font-bold tracking-widest uppercase border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-              activeWorkspaceTab === 'overview' ? 'border-[#BF953F] text-[#BF953F]' : 'border-transparent text-neutral-400 hover:text-black'
+            className={`py-5 text-xs font-bold tracking-[0.25em] uppercase border-b-2 transition-all cursor-pointer flex items-center gap-2.5 relative font-sans ${
+              activeWorkspaceTab === 'overview' ? 'border-[#BF953F] text-[#BF953F]' : 'border-transparent text-neutral-400 hover:text-neutral-900'
             }`}
           >
-            <Activity className="w-4 h-4" /> INVENTORY STRATUM
+            <Activity className="w-4 h-4" /> Product Inventory
           </button>
           <button
             onClick={() => { setShowAddForm(true); setActiveWorkspaceTab('editor'); }}
-            className={`py-4 text-xs font-bold tracking-widest uppercase border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-              activeWorkspaceTab === 'editor' ? 'border-[#BF953F] text-[#BF953F]' : 'border-transparent text-neutral-400 hover:text-black'
+            className={`py-5 text-xs font-bold tracking-[0.25em] uppercase border-b-2 transition-all cursor-pointer flex items-center gap-2.5 relative font-sans ${
+              activeWorkspaceTab === 'editor' ? 'border-[#BF953F] text-[#BF953F]' : 'border-transparent text-neutral-400 hover:text-neutral-900'
             }`}
           >
-            <Layers className="w-4 h-4" /> GARMENT INTEGRATION STUDIO
+            <Layers className="w-4 h-4" /> Add / Edit Product
           </button>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
         
-        {/* Dynamic global feedback */}
+        {/* FEEDBACK STATUS BAR */}
         {feedbackMsg && (
-          <div className="bg-[#111111] text-[#FCF6BA] border border-[#BF953F]/30 rounded-xl p-4 text-xs tracking-wider mb-8 text-center font-bold shadow-lg animate-fade-in flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#C9A84C]" /> {feedbackMsg}
+          <div className="bg-neutral-900 text-[#FCF6BA] border border-[#BF953F]/30 rounded-2xl p-4 text-xs tracking-wide mb-10 text-center font-medium shadow-2xl animate-fade-in flex items-center justify-center gap-3">
+            <Sparkles className="w-4 h-4 text-[#C9A84C] animate-spin" /> {feedbackMsg}
           </div>
         )}
 
-        {/* ── OVERVIEW TAB CONTENTS ── */}
+        {/* OVERVIEW TAB */}
         {activeWorkspaceTab === 'overview' && (
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-12">
             
-            {/* INVENTORY METRICS GROUP */}
+            {/* METRICS CARDS */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm flex flex-col gap-1 text-left">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">STORE DENSITY CODES</span>
-                <span className="text-3xl font-light font-serif text-[#111111]">{products.length} Designs</span>
-                <div className="text-[10px] text-neutral-400 mt-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-[#BF953F] rounded-full animate-pulse" />
-                  <span>Real-time channel linked</span>
+              <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm flex flex-col gap-1 text-left hover:border-neutral-300 transition-colors">
+                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">Total Products</span>
+                <span className="text-3xl font-light font-serif text-neutral-900">{products.length} Items</span>
+                <div className="text-[10px] text-neutral-400 mt-3 flex items-center gap-1.5 font-sans">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                  <span>Live & Synced</span>
                 </div>
               </div>
 
-              <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm flex flex-col gap-1 text-left">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">AGGREGATE GARMENT UNITS</span>
-                <span className="text-3xl font-light font-serif text-[#111111]">{totalStockCount} PCS</span>
-                <p className="text-[10px] text-neutral-400 mt-2">Sum of main inventories + mapped custom variants.</p>
+              <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm flex flex-col gap-1 text-left hover:border-neutral-300 transition-colors">
+                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">Total Stock Volume</span>
+                <span className="text-3xl font-light font-serif text-neutral-900">{totalStockCount} Units</span>
+                <p className="text-[10px] text-neutral-400 mt-3 font-sans">Total items available across all sizing/variants.</p>
               </div>
 
-              <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm flex flex-col gap-1 text-left">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">LOW STOCK SKWS</span>
+              <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm flex flex-col gap-1 text-left bg-amber-50/20 border-amber-200/50">
+                <span className="text-[9px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">Low Stock Alerts</span>
                 <span className="text-3xl font-bold font-mono text-[#BF953F]">{lowStockAlerts.length} Alerts</span>
-                <p className="text-[10px] text-neutral-400 mt-2">Active warnings on specific color-size variants.</p>
+                <p className="text-[10px] text-neutral-400 mt-3 font-sans">Variants running dangerously low on stock.</p>
               </div>
 
-              <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm flex flex-col gap-1 text-left bg-gradient-to-br from-neutral-50 to-white">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">DEPLETED DESIGNS</span>
-                <span className="text-3xl font-light font-serif text-red-600">{outOfStockItems.length} Empty</span>
-                <p className="text-[10px] text-neutral-400 mt-2">Purged or items with zero active units.</p>
+              <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm flex flex-col gap-1 text-left bg-neutral-50">
+                <span className="text-[9px] font-bold tracking-[0.2em] text-neutral-400 uppercase">Out of Stock</span>
+                <span className="text-3xl font-light font-serif text-red-500">{outOfStockItems.length} Products</span>
+                <p className="text-[10px] text-neutral-400 mt-3 font-sans">Products that have completely sold out.</p>
               </div>
             </section>
 
-            {/* ALERT BOXES FOR DEVIATING NUMERICALS */}
+            {/* LOW STOCK ALERT BANNER */}
             {lowStockAlerts.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 text-left">
+              <div className="bg-amber-50/60 border border-amber-200/70 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 text-left backdrop-blur-md">
                 <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold text-xs text-amber-900 uppercase tracking-widest">Atelier Low Stock Warnings</h4>
-                  <p className="text-xs text-amber-700 font-light mt-0.5">
-                    Certain sizes and color structures has dropped below safety limits. Mapped clients might face out-of-stock checkouts.
+                <div className="space-y-0.5">
+                  <h4 className="font-bold text-xs text-amber-900 uppercase tracking-[0.15em]">Inventory Warning</h4>
+                  <p className="text-xs text-amber-700/90 font-light leading-relaxed">
+                    Some item variations have dropped below the safety limit. Update stock soon to avoid checkout issues.
                   </p>
                 </div>
                 <button 
                   onClick={() => { setShowAddForm(true); setActiveWorkspaceTab('editor'); }}
-                  className="sm:ml-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[9px] tracking-widest uppercase rounded cursor-pointer"
+                  className="sm:ml-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[9px] tracking-widest uppercase rounded-xl cursor-pointer shadow-md transition-colors whitespace-nowrap"
                 >
-                  ALIGN STOCK
+                  MANAGE STOCK
                 </button>
               </div>
             )}
 
-            {/* LIVE DATA GRID DIRECT OVERVIEWS */}
-            <section className="bg-white border border-neutral-200 rounded-xl p-6 sm:p-8 shadow-sm">
-              <div className="flex justify-between items-center pb-4 mb-6 border-b border-neutral-100 text-left">
+            {/* PRODUCT DATAGRID TABLE */}
+            <section className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-10 shadow-sm">
+              <div className="flex justify-between items-center pb-6 mb-8 border-b border-neutral-100 text-left">
                 <div>
-                  <h3 className="font-serif text-xl font-light text-[#111111]">Active Inventory Management</h3>
-                  <p className="text-[11px] text-neutral-400">Trigger manual deletions, upload color variants, or click edit to align descriptions.</p>
+                  <h3 className="font-serif text-2xl font-light text-neutral-900">Product List</h3>
+                  <p className="text-[11px] text-neutral-400 mt-1">Quickly edit product details, view live variations, or delete existing items.</p>
                 </div>
               </div>
 
-              <div className="overflow-x-auto w-full">
+              <div className="overflow-x-auto w-full CustomScrollbar">
                 <table className="w-full border-collapse text-left text-xs font-light">
                   <thead>
-                    <tr className="border-b border-neutral-200 text-[#BF953F] font-bold tracking-widest text-[9px] uppercase">
-                      <th className="pb-3 pl-2">Garment Description</th>
-                      <th className="pb-3">Catalog ID</th>
-                      <th className="pb-3">Strap Price</th>
-                      <th className="pb-3">Category Map</th>
-                      <th className="pb-3">Color Variants</th>
-                      <th className="pb-3 text-right pr-2">Operations Panel</th>
+                    <tr className="border-b border-neutral-200 text-[#BF953F] font-bold tracking-[0.25em] text-[9px] uppercase">
+                      <th className="pb-4 pl-2">Product Details</th>
+                      <th className="pb-4">Product ID</th>
+                      <th className="pb-4">Price</th>
+                      <th className="pb-4">Category</th>
+                      <th className="pb-4">Variants & Colors</th>
+                      <th className="pb-4 text-right pr-2">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 font-sans">
+                  <tbody className="divide-y divide-neutral-100">
                     {products.map((p) => {
                       const variantsCount = p.variants?.length || 0;
                       return (
-                        <tr key={p.id} className="hover:bg-[#FAF9F6]/60 transition-all font-sans">
-                          <td className="py-4 pl- pl-2 flex items-center gap-3">
+                        <tr key={p.id} className="hover:bg-neutral-50/50 transition-all group">
+                          <td className="py-4 pl-2 flex items-center gap-4">
                             <img 
                               src={p.image} 
                               alt={p.name} 
-                              className="w-10 h-13 object-cover object-top rounded border border-neutral-200 bg-neutral-150"
+                              className="w-12 h-16 object-cover object-top rounded-lg border border-neutral-200 bg-neutral-100 shadow-sm transition-transform group-hover:scale-[1.03]"
                             />
-                            <div className="flex flex-col gap-0.5 text-left max-w-[200px]">
-                              <span className="font-serif text-xs font-bold text-[#111111] leading-tight truncate">{p.name}</span>
-                              <span className="text-[9px] text-[#BF953F] font-semibold">{p.subcategory} line</span>
+                            <div className="flex flex-col gap-1 text-left max-w-[220px]">
+                              <span className="font-serif text-sm font-semibold text-neutral-900 leading-tight truncate">{p.name}</span>
+                              <span className="text-[9px] text-[#BF953F] font-bold uppercase tracking-wider">{p.subcategory}</span>
                             </div>
                           </td>
-                          <td className="py-2 font-mono text-[10px] text-neutral-400 leading-none">{p.id}</td>
-                          <td className="py-2 font-sans font-bold text-[#111111]">Rs. {p.price.toLocaleString()}</td>
-                          <td className="py-2 text-[9px] uppercase font-bold text-neutral-400 tracking-wider font-sans">{p.category}</td>
-                          <td className="py-2">
+                          <td className="py-4 font-mono text-[10px] text-neutral-400 select-all tracking-tight">{p.id}</td>
+                          <td className="py-4 font-sans font-bold text-neutral-900 text-sm">Rs. {p.price.toLocaleString()}</td>
+                          <td className="py-4 text-[10px] uppercase font-bold text-neutral-400 tracking-[0.15em] font-sans">{p.category}</td>
+                          <td className="py-4">
                             {variantsCount > 0 ? (
-                              <div className="flex flex-wrap gap-1">
+                              <div className="flex items-center flex-wrap gap-1.5">
                                 {Array.from(new Set(p.variants?.map(v => v.color))).map(col => {
                                   const matchingV = p.variants?.find(v => v.color === col);
                                   return (
                                     <span 
                                       key={col} 
-                                      title={col}
-                                      className="w-3.5 h-3.5 rounded-full border border-black/10 inline-block"
-                                      style={{ backgroundColor: matchingV?.color_code || '#cccccc' }}
+                                      title={col.toUpperCase()}
+                                      className="w-4 h-4 rounded-full border border-neutral-950/10 inline-block shadow-inner hover:scale-110 transition-transform"
+                                      style={{ backgroundColor: matchingV?.color_code || '#CCCCCC' }}
                                     />
                                   );
                                 })}
                                 <span className="text-[10px] text-neutral-400 font-mono pl-1">({p.variants?.length} skus)</span>
                               </div>
                             ) : (
-                              <span className="text-[9px] text-neutral-400 italic font-sans">Standard Item</span>
+                              <span className="text-[10px] text-neutral-400 italic font-sans font-light">Standard Product (No Variants)</span>
                             )}
                           </td>
-                          <td className="py-2 text-right">
+                          <td className="py-4 text-right">
                             <div className="flex gap-2 justify-end pr-2">
                               <button
                                 onClick={() => handleEditClick(p)}
-                                className="w-8 h-8 rounded border border-neutral-200 hover:border-[#BF953F] hover:bg-[#BF953F]/10 flex items-center justify-center text-[#111111] hover:text-[#BF953F] transition-all cursor-pointer"
-                                title="Edit product & variants"
+                                className="w-9 h-9 rounded-xl border border-neutral-200 hover:border-[#BF953F] hover:bg-[#BF953F]/5 flex items-center justify-center text-neutral-700 hover:text-[#BF953F] transition-all cursor-pointer shadow-sm active:scale-95"
+                                title="Edit Product"
                               >
-                                <Edit3 className="w-3.5 h-3.5" />
+                                <Edit3 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteClick(p.id)}
-                                className="w-8 h-8 rounded border border-neutral-200 hover:border-red-500 hover:bg-red-500/5 flex items-center justify-center text-neutral-400 hover:text-red-500 transition-all cursor-pointer"
-                                title="Purge product"
+                                className="w-9 h-9 rounded-xl border border-neutral-200 hover:border-red-500 hover:bg-red-50 flex items-center justify-center text-neutral-400 hover:text-red-600 transition-all cursor-pointer shadow-sm active:scale-95"
+                                title="Delete Product"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
@@ -622,510 +630,528 @@ export const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* ── EDITOR WORKBENCH TAB CONTENTS ── */}
+
+        {/* ── SECTION 2: STUDIO DESK DESIGN PRODUCTION PIPELINE ── */}
         {activeWorkspaceTab === 'editor' && showAddForm && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             
-            {/* LEFT COLUMN: PRIMARY PROPERTIES FORM */}
-            <section className="lg:col-span-7 bg-white border border-[#111111]/10 rounded-xl p-6 sm:p-8 shadow-lg relative text-left">
-              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#AA771C] rounded-t-xl" />
+            {/* COMPREHENSIVE BLUEPRINT CREATION CONTAINER */}
+            <section className="lg:col-span-7 bg-white border border-neutral-200 rounded-2xl p-6 sm:p-10 shadow-xl relative text-left">
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#AA771C] rounded-t-2xl" />
               
-              <div className="border-b border-neutral-100 pb-5 mb-6">
-                <h3 className="font-serif text-2xl font-light text-[#111111]">
-                  {editingId ? 'Modify Premium Garment' : 'Build Custom Atelier Garment'}
+              <div className="border-b border-neutral-100 pb-6 mb-8">
+                <h3 className="font-serif text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">
+                  {editingId ? 'Modify Couture Profile' : 'Add New Product'}
                 </h3>
-                <p className="text-[11px] text-neutral-400 mt-1">
-                  Fill core specifications below. Upload directly to Supabase Storage systems.
+                <p className="text-[11px] text-neutral-400 mt-1.5 font-sans leading-relaxed">
+                  Map essential parameters, dimensions, metadata schemas, and upload media blueprints safely to decentralized cluster frames.
                 </p>
               </div>
 
-              <form onSubmit={handleSaveProduct} className="flex flex-col gap-5">
+              <form onSubmit={handleSaveProduct} className="flex flex-col gap-6">
                 
-                {/* ID & NAME ROW */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* DYNAMIC SKU IDENTITY & NOMENCLATURE ROW */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="hidden">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">PRODUCT SKU ID *</label>
+                    <label className="text-[9px] font-black tracking-[0.2em] text-[#BF953F] uppercase block mb-2">SYSTEM UNIQUE IDENTIFIER *</label>
                     <input 
                       type="text" 
                       placeholder="e.g. signature-raw-silk-shirting" 
                       disabled={!!editingId}
                       value={formData.id}
                       onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-                      className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F] disabled:opacity-40"
+                      className="w-full text-xs text-neutral-900 bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] disabled:opacity-40 font-mono"
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">GARMENT NAME *</label>
+                  <div className="flex flex-col gap-2 sm:col-span-2">
+                    <label className="text-[9px] font-black tracking-[0.2em] text-[#BF953F] uppercase block mb-1">Product Name *</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Signature Raw Silk Kurta" 
+                      placeholder="e.g. Signature Luxury Raw Silk Kurta" 
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F]"
+                      className="w-full text-xs text-neutral-900 bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] font-sans tracking-wide transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
-                {/* CATEGORY & CATEGORY CLASSIFICATIONS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">CATEGORY DECK</label>
-                    <select 
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                      className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F]"
-                    >
-                      <option value="men">Men's Apparel Collection</option>
-                      <option value="women">Women's Ethnic Collection</option>
-                      <option value="kids">Kids' Miniature Collection</option>
-                    </select>
+                {/* CATEGORIAL SPECIFICATION DECKS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[9px] font-black tracking-[0.2em] text-[#BF953F] uppercase block mb-1">Select Category</label>
+                    <div className="relative">
+                      <select 
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                        className="w-full text-xs text-neutral-900 bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] appearance-none font-sans tracking-wide transition-all cursor-pointer shadow-inner"
+                      >
+                        <option value="men">↳ Men's Wear</option>
+                        <option value="women">↳ Women's Wear</option>
+                        <option value="kids">↳ Kids' Wear</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">SUBCATEGORY DRAWER</label>
+                  <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">SUBCATEGORY DRAWER</label>
+                  <div className="relative">
                     <select 
                       value={formData.subcategory}
                       onChange={(e) => setFormData({ ...formData, subcategory: e.target.value as any })}
-                      className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F]"
+                      className="w-full text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 rounded-lg py-3.5 px-4 appearance-none outline-none transition-all duration-300 focus:bg-white focus:border-[#BF953F] focus:ring-2 focus:ring-[#BF953F]/20 cursor-pointer"
                     >
-                      <option value="essentials">Premium Essentials Cuts</option>
-                      <option value="streetwear">Modern Streetwear Hoodies/Cargos</option>
-                      <option value="accessories">Premium Headwear Caps/Belts</option>
+                      <option value="essentials">↳ Essentials / Basics</option>
+                      <option value="streetwear">↳ Streetwear (Hoodies/Cargos)</option>
+                      <option value="accessories">↳ Accessories (Caps/Belts)</option>
                     </select>
-                  </div>
-                </div>
-
-                {/* PRICE & BADGE ROW */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase"> strap price (Rs.) *</label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400">Rs.</span>
-                      <input 
-                        type="number" 
-                        placeholder="e.g. 5500" 
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                        className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 pl-10 pr-4 outline-none focus:bg-white focus:border-[#BF953F]"
-                      />
+                    {/* Custom Dropdown Arrow */}
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                      <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">MARKETING BADGE LABEL</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Flagship, Silk Limited, New Entry" 
-                      value={formData.badge}
-                      onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                      className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F]"
-                    />
-                  </div>
                 </div>
+              </div>
 
-                {/* FILE UPLOADER SYSTEM FOR MAIN PRODUCT PICTURE */}
-                <div className="border-t border-b border-neutral-100 py-4 my-2">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="text-left">
-                      <span className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase block mb-0.5">Primary Photography Asset *</span>
-                      <span className="text-[10px] text-neutral-400">Upload a crisp high-contrast portrait aspect [3:4] directly.</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <label className="px-4.5 py-2.5 rounded border border-neutral-205 bg-neutral-50 hover:bg-neutral-100 text-[10px] font-bold tracking-wider text-neutral-600 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm">
-                        <Upload className="w-3.5 h-3.5 text-[#BF953F]" />
-                        <span>SELECT IMAGE FILE</span>
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={handleMainUploader}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex gap-2.5 items-center">
-                    <input 
-                      type="url" 
-                      placeholder="Cloud resource URL endpoint..." 
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      className="flex-1 w-full text-[10px] text-[#111111] bg-[#FAF9F6] border border-neutral-205 rounded-md py-2 px-3 outline-none focus:bg-white focus:border-[#BF953F] font-mono"
-                    />
-                    {formData.image && (
-                      <img src={formData.image} alt="Preview thumbnail" className="w-10 h-10 object-cover object-top rounded border border-neutral-200" />
-                    )}
-                  </div>
-                </div>
-
-                {/* SIZES MATRIX SELECTORS */}
+              {/* PRICE & BADGE ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">AVAILABLE SIZE CHANNELS</label>
-                  <div className="flex flex-wrap gap-2 pt-1 font-sans">
-                    {['S', 'M', 'L', 'XL', 'XXL', 'Free Size'].map((size) => {
-                      const isSelected = (formData.sizes || []).includes(size);
-                      return (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => toggleSizeSelection(size)}
-                          className={`px-4.5 py-2.5 border rounded-lg text-[10px] font-bold tracking-widest transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'bg-[#111111] text-[#FCF6BA] border-[#111111] scale-95' 
-                              : 'bg-white text-neutral-400 border-neutral-200 hover:border-neutral-300'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">Product Price (Rs.) *</label>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400 group-focus-within:text-[#BF953F] transition-colors">Rs.</span>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 5500" 
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      className="w-full text-sm font-medium text-neutral-800 bg-[#FAF9F6] border border-neutral-200 rounded-lg py-3.5 pl-12 pr-4 outline-none transition-all duration-300 focus:bg-white focus:border-[#BF953F] focus:ring-2 focus:ring-[#BF953F]/20"
+                    />
                   </div>
                 </div>
-
-                {/* GARMENT DETAILS & DESCRIPTIONS */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase">Description & Handcraft parameters</label>
-                  <textarea 
-                    rows={4}
-                    placeholder="Describe weaving patterns, hand embroideries, raw threads count, or wash instructions..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 rounded-md py-3 px-4 outline-none focus:bg-white focus:border-[#BF953F] resize-y"
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">Product Badge / Tag</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Flagship, Limited Edition" 
+                    value={formData.badge}
+                    onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                    className="w-full text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 rounded-lg py-3.5 px-4 outline-none transition-all duration-300 focus:bg-white focus:border-[#BF953F] focus:ring-2 focus:ring-[#BF953F]/20"
                   />
                 </div>
+              </div>
 
-                {/* DYNAMIC MULTI-GALLERY PHOTO SUBMISSION */}
-                <div className="border-t border-neutral-100 pt-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-left">
-                      <span className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase block mb-0.5">Gallery Photography Array</span>
-                      <span className="text-[10px] text-neutral-400">Include complementary thumbnails for swiping previews.</span>
-                    </div>
+              {/* FILE UPLOADER SYSTEM FOR MAIN PRODUCT PICTURE */}
+              <div className="border border-neutral-200 bg-neutral-50/50 rounded-xl p-5 my-2 hover:border-neutral-300 transition-colors">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="text-left">
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-neutral-800 uppercase block mb-1"> Main Product Image *</span>
+                    <span className="text-[11px] text-neutral-500">Upload main photo (3:4 ratio recommended).</span>
+                  </div>
 
-                    <label className="px-3 py-2 border rounded text-[9px] font-bold tracking-wider text-neutral-600 bg-neutral-50 hover:bg-neutral-100 cursor-pointer flex items-center gap-1 shadow-sm">
-                      <Upload className="w-3 h-3 text-[#BF953F]" />
-                      <span>BATCH UPLOAD</span>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <label className="px-5 py-3 rounded-lg border-2 border-dashed border-[#BF953F]/50 bg-[#BF953F]/5 hover:bg-[#BF953F]/10 hover:border-[#BF953F] text-[10px] font-bold tracking-widest text-[#BF953F] transition-all cursor-pointer flex items-center gap-2 shadow-sm">
+                      <Upload className="w-4 h-4" />
+                      <span>SELECT IMAGE FILE</span>
                       <input 
                         type="file" 
-                        multiple 
-                        accept="image/*" 
-                        onChange={handleGalleryUploader} 
-                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleMainUploader}
+                        className="hidden"
                       />
                     </label>
                   </div>
+                </div>
 
-                  {formData.gallery && formData.gallery.length > 0 && (
-                    <div className="flex flex-wrap gap-2 border border-neutral-200 rounded-lg p-3 bg-neutral-50/50">
-                      {formData.gallery.map((url, i) => (
-                        <div key={i} className="relative w-14 h-18 rounded overflow-hidden group border border-neutral-200 bg-white shadow-xs">
-                          <img src={url} className="w-full h-full object-cover object-top" />
-                          <button 
-                            type="button" 
-                            onClick={() => setFormData(prev => ({ ...prev, gallery: (prev.gallery || []).filter((_, idx) => idx !== i) }))}
-                            className="absolute top-0 right-0 w-4 h-4 bg-red-600 text-white rounded-bl flex items-center justify-center text-[10px] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-0"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                <div className="mt-4 flex gap-3 items-center">
+                  <input 
+                    type="url" 
+                    placeholder="Or paste cloud resource URL endpoint..." 
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    className="flex-1 w-full text-xs text-neutral-700 bg-white border border-neutral-200 rounded-lg py-3 px-4 outline-none transition-all focus:border-[#BF953F] focus:ring-2 focus:ring-[#BF953F]/20 font-mono"
+                  />
+                  {formData.image && (
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
+                      <img src={formData.image} alt="Preview" className="w-12 h-12 object-cover object-top rounded-lg border border-neutral-200 shadow-sm" />
                     </div>
                   )}
                 </div>
+              </div>
 
-                {/* ATELIER SPECIFICATION TABLE SETS */}
-                <div className="border-t border-neutral-100 pt-5 text-left">
-                  <h4 className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase mb-4">SPECIFICATIONS OVERRIDES INDEX</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-neutral-400 capitalize">Composition</span>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. 100% Linen Flax Mix" 
-                        value={formData.specifications?.['Composition'] || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          specifications: { ...formData.specifications, 'Composition': e.target.value }
-                        })}
-                        className="text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 py-2.5 px-3 rounded-md outline-none focus:bg-white focus:border-[#BF953F]"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-neutral-400 capitalize">Collar / Stitch contours</span>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Round club collar / Barchetta" 
-                        value={formData.specifications?.['Fit'] || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          specifications: { ...formData.specifications, 'Fit': e.target.value }
-                        })}
-                        className="text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 py-2.5 px-3 rounded-md outline-none focus:bg-white focus:border-[#BF953F]"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-neutral-400 capitalize">Product Origin</span>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Made in Pakistan" 
-                        value={formData.specifications?.['Origin'] || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          specifications: { ...formData.specifications, 'Origin': e.target.value }
-                        })}
-                        className="text-xs text-[#111111] bg-[#FAF9F6] border border-neutral-200 py-2.5 px-3 rounded-md outline-none focus:bg-white focus:border-[#BF953F]"
-                      />
-                    </div>
+              {/* SIZES MATRIX SELECTORS */}
+              <div className="flex flex-col gap-3 mt-2">
+                <label className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">Select Available Sizes</label>
+                <div className="flex flex-wrap gap-3 font-sans">
+                  {['S', 'M', 'L', 'XL', 'XXL', 'Free Size'].map((size) => {
+                    const isSelected = (formData.sizes || []).includes(size);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => toggleSizeSelection(size)}
+                        className={`px-5 py-2.5 rounded-lg text-xs font-bold tracking-widest transition-all duration-300 cursor-pointer shadow-sm ${
+                          isSelected 
+                            ? 'bg-neutral-900 text-[#FCF6BA] border-transparent shadow-neutral-900/20 translate-y-px' 
+                            : 'bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400 hover:text-neutral-800 hover:-translate-y-0.5'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* GARMENT DETAILS & DESCRIPTIONS */}
+              <div className="flex flex-col gap-2 mt-2">
+                <label className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase">Product Description</label>
+                <textarea 
+                  rows={4}
+                  placeholder="Describe weaving patterns, hand embroideries, raw threads count, or wash instructions..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 rounded-lg py-4 px-4 outline-none transition-all duration-300 focus:bg-white focus:border-[#BF953F] focus:ring-2 focus:ring-[#BF953F]/20 resize-y leading-relaxed"
+                />
+              </div>
+
+              {/* DYNAMIC MULTI-GALLERY PHOTO SUBMISSION */}
+              <div className="border-t border-neutral-200 pt-6 mt-2">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="text-left">
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-neutral-800 uppercase block mb-1">Product Gallery Images</span>
+                    <span className="text-[11px] text-neutral-500">Upload extra photos for slider preview</span>
                   </div>
+
+                  <label className="px-4 py-2.5 rounded-lg border border-neutral-300 text-[10px] font-bold tracking-widest text-neutral-700 bg-white hover:bg-neutral-50 hover:border-neutral-400 cursor-pointer flex items-center gap-2 shadow-sm transition-all">
+                    <Upload className="w-3.5 h-3.5 text-[#BF953F]" />
+                    <span>Upload Images</span>
+                    <input 
+                      type="file" 
+                      multiple 
+                      accept="image/*" 
+                      onChange={handleGalleryUploader} 
+                      className="hidden" 
+                    />
+                  </label>
                 </div>
 
-              </form>
-            </section>
-
-            {/* RIGHT COLUMN: ADVANCED COLOR-SIZE VARIANT WORKBENCH & PREVIEWS */}
-            <div className="lg:col-span-5 flex flex-col gap-8">
-              
-              {/* ADVANCED MULTI-VARIANT SYSTEM WORKBENCH */}
-              <section className="bg-white border border-neutral-200 p-6 rounded-xl shadow-lg relative text-left">
-                <div className="absolute top-0 inset-x-0 h-1 bg-[#BF953F] rounded-t-xl" />
-                
-                <span className="text-[9px] font-bold tracking-[0.2em] text-[#BF953F] uppercase block mb-1">ADVANCED PRODUCT VARIANT SYSTEM</span>
-                <h3 className="font-serif text-lg text-neutral-800 font-light mb-4">Color & Size Inventory Blocks</h3>
-                
-                {/* Variant list state workbench */}
-                {variantsList.length > 0 ? (
-                  <div className="flex flex-col divide-y divide-neutral-100 max-h-[220px] overflow-y-auto mb-5 border border-neutral-100 rounded-lg p-2.5 bg-neutral-50/50">
-                    {variantsList.map((v, i) => (
-                      <div key={i} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2">
-                          {v.main_image ? (
-                            <img src={v.main_image} className="w-7 h-9 object-cover rounded border" />
-                          ) : (
-                            <span className="w-7 h-9 bg-neutral-200 rounded text-[9px] text-neutral-400 flex items-center justify-center">N/G</span>
-                          )}
-                          <div className="flex flex-col">
-                            <span className="font-bold flex items-center gap-1">
-                              <span className="w-2.5 h-2.5 rounded-full border border-black/10 inline-block" style={{ backgroundColor: v.color_code }} />
-                              <span className="capitalize">{v.color}</span>
-                            </span>
-                            <span className="text-[10px] text-neutral-400">Size: <strong className="text-black">{v.size}</strong> • Units: <strong className="text-black">{v.stock} pcs</strong></span>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2.5 items-center">
-                          {v.price && (
-                            <span className="text-[10px] font-mono font-bold text-[#BF953F]">Rs. {v.price}</span>
-                          )}
+                {formData.gallery && formData.gallery.length > 0 && (
+                  <div className="flex flex-wrap gap-3 border border-neutral-200 rounded-xl p-4 bg-neutral-50/50">
+                    {formData.gallery.map((url, i) => (
+                      <div key={i} className="relative w-16 h-20 rounded-lg overflow-hidden group border border-neutral-200 bg-white shadow-sm hover:shadow-md transition-all">
+                        <img src={url} className="w-full h-full object-cover object-top" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                           <button 
                             type="button" 
-                            onClick={() => removeVariantFromWorkbench(i)}
-                            className="bg-transparent border-0 text-red-500 hover:text-red-700 font-bold text-xs cursor-pointer p-1"
+                            onClick={() => setFormData(prev => ({ ...prev, gallery: (prev.gallery || []).filter((_, idx) => idx !== i) }))}
+                            className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-sm shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-200 border-0 cursor-pointer"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-6 border border-dashed border-neutral-200 text-neutral-400 rounded-lg mb-5 text-xs font-light">
-                    No custom variations registered yet. Below is standard inventory.
+                )}
+              </div>
+
+              {/* ATELIER SPECIFICATION TABLE SETS */}
+              <div className="border-t border-neutral-200 pt-6 mt-2 text-left">
+                <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase mb-4">Product Specifications</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">↳ Material / Fabric</span>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 100% Linen Flax Mix" 
+                      value={formData.specifications?.['Composition'] || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specifications: { ...formData.specifications, 'Composition': e.target.value }
+                      })}
+                      className="text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 py-3 px-3 rounded-lg outline-none transition-all focus:bg-white focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/30"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">↳ Fit Type</span>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Barchetta Pocket" 
+                      value={formData.specifications?.['Fit'] || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specifications: { ...formData.specifications, 'Fit': e.target.value }
+                      })}
+                      className="text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 py-3 px-3 rounded-lg outline-none transition-all focus:bg-white focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/30"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">↳ Made In</span>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Made in Italy" 
+                      value={formData.specifications?.['Origin'] || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specifications: { ...formData.specifications, 'Origin': e.target.value }
+                      })}
+                      className="text-sm text-neutral-800 bg-[#FAF9F6] border border-neutral-200 py-3 px-3 rounded-lg outline-none transition-all focus:bg-white focus:border-[#BF953F] focus:ring-1 focus:ring-[#BF953F]/30"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </form>
+          </section>
+
+          {/* RIGHT COLUMN: ADVANCED COLOR-SIZE VARIANT WORKBENCH & PREVIEWS */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            
+            {/* ADVANCED MULTI-VARIANT SYSTEM WORKBENCH */}
+            <section className="bg-white border border-neutral-200 p-7 rounded-2xl shadow-xl shadow-neutral-200/50 relative text-left overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#BF953F] to-[#FCF6BA]" />
+              
+              <span className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase block mb-1.5 mt-2">Product Variants</span>
+              <h3 className="font-serif text-xl text-neutral-900 mb-5">Manage Inventory & Stock</h3>
+              
+              {/* Variant list state workbench */}
+              {variantsList.length > 0 ? (
+                <div className="flex flex-col divide-y divide-neutral-100 max-h-[240px] overflow-y-auto mb-6 border border-neutral-200 rounded-xl p-3 bg-[#FAF9F6] shadow-inner custom-scrollbar">
+                  {variantsList.map((v, i) => (
+                    <div key={i} className="py-3 flex items-center justify-between gap-3 text-sm hover:bg-white transition-colors px-2 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {v.main_image ? (
+                          <img src={v.main_image} className="w-9 h-12 object-cover rounded-md border border-neutral-200 shadow-sm" />
+                        ) : (
+                          <span className="w-9 h-12 bg-neutral-200 rounded-md text-[10px] text-neutral-500 flex items-center justify-center font-mono">N/G</span>
+                        )}
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold flex items-center gap-2 text-neutral-800">
+                            <span className="w-3.5 h-3.5 rounded-full border border-black/15 shadow-inner" style={{ backgroundColor: v.color_code }} />
+                            <span className="capitalize">{v.color}</span>
+                          </span>
+                          <span className="text-[11px] text-neutral-500">Size: <strong className="text-neutral-800">{v.size}</strong> • <strong className="text-neutral-800">{v.stock} pcs</strong></span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 items-center">
+                        {v.price && (
+                          <span className="text-[11px] font-mono font-bold text-[#BF953F] bg-[#BF953F]/10 px-2 py-1 rounded">Rs. {v.price}</span>
+                        )}
+                        <button 
+                          type="button" 
+                          onClick={() => removeVariantFromWorkbench(i)}
+                          className="bg-neutral-100 p-2 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer border-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 border-2 border-dashed border-neutral-200 bg-neutral-50 text-neutral-500 rounded-xl mb-6 text-sm">
+                  No custom variations registered yet.<br/> <span className="text-xs text-neutral-400 mt-1 block">Below is standard inventory assembler.</span>
+                </div>
+              )}
+
+              {/* Sub-form creator box */}
+              <div className="bg-neutral-900 border border-black rounded-xl p-5 flex flex-col gap-4 text-sm relative overflow-hidden">
+                <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#BF953F]/10 rounded-full blur-2xl pointer-events-none"></div>
+                <span className="text-[10px] font-bold text-[#BF953F] uppercase tracking-widest border-b border-neutral-800 pb-2 mb-1 block">Variations Assembler</span>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wider uppercase">Color String</span>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Navy Blue" 
+                      value={tempVariant.color}
+                      onChange={(e) => setTempVariant(prev => ({ ...prev, color: e.target.value }))}
+                      className="py-2.5 px-3 border border-neutral-700 rounded-lg bg-neutral-800 text-white outline-none focus:border-[#BF953F] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wider uppercase">Hex Swatch</span>
+                    <div className="flex gap-2 items-center h-full bg-neutral-800 border border-neutral-700 rounded-lg p-1.5 focus-within:border-[#BF953F] transition-colors">
+                      <input 
+                        type="color" 
+                        value={tempVariant.color_code}
+                        onChange={(e) => setTempVariant(prev => ({ ...prev, color_code: e.target.value }))}
+                        className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0"
+                      />
+                      <span className="font-mono text-[11px] text-neutral-300 uppercase tracking-widest">{tempVariant.color_code}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 py-1">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wider uppercase">Size</span>
+                    <select 
+                      value={tempVariant.size}
+                      onChange={(e) => setTempVariant(prev => ({ ...prev, size: e.target.value }))}
+                      className="py-2.5 px-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white outline-none text-xs"
+                    >
+                      {['S', 'M', 'L', 'XL', 'XXL', 'Free Size'].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wider uppercase">Units</span>
+                    <input 
+                      type="number" 
+                      value={tempVariant.stock}
+                      onChange={(e) => setTempVariant(prev => ({ ...prev, stock: Number(e.target.value) }))}
+                      className="py-2.5 px-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white outline-none text-xs text-center"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wider uppercase">Price Add</span>
+                    <input 
+                      type="number" 
+                      placeholder="Equal"
+                      value={tempVariant.price || ''}
+                      onChange={(e) => setTempVariant(prev => ({ ...prev, price: e.target.value ? Number(e.target.value) : undefined }))}
+                      className="py-2.5 px-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white outline-none text-xs text-center"
+                    />
+                  </div>
+                </div>
+
+                {/* Photo attachment for variations with storage uploader hook */}
+                <div className="border-t border-neutral-800 pt-4 mt-2 flex justify-between items-center gap-3">
+                  <div className="text-left">
+                    <span className="text-[11px] font-bold text-neutral-200 block">Products Variations</span>
+                    <span className="text-[10px] text-neutral-500">Attach distinct color asset.</span>
+                  </div>
+                  <label className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg text-[10px] font-bold tracking-widest text-neutral-300 cursor-pointer transition-colors shadow-sm whitespace-nowrap">
+                    <span>UPLOAD</span>
+                    <input type="file" accept="image/*" onChange={handleVariantUploader} className="hidden" />
+                  </label>
+                </div>
+
+                {tempVariant.main_image && (
+                  <div className="flex gap-4 items-center bg-neutral-800 border border-neutral-700 p-2.5 rounded-lg">
+                    <img src={tempVariant.main_image} className="w-12 h-14 object-cover rounded shadow-sm" />
+                    <span className="text-[10px] font-mono text-neutral-400 truncate flex-1">{tempVariant.main_image}</span>
                   </div>
                 )}
 
-                {/* Sub-form creator box */}
-                <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4.5 flex flex-col gap-3 text-xs">
-                  <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-250 pb-1.5 mb-1 block">Variations Assembler</span>
-                  
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-550 font-bold">Color String</span>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Navy, Tan, Mint" 
-                        value={tempVariant.color}
-                        onChange={(e) => setTempVariant(prev => ({ ...prev, color: e.target.value }))}
-                        className="py-2 px-3 border border-neutral-200 rounded bg-white outline-none"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-550 font-bold">Hex Color Swatch</span>
-                      <div className="flex gap-1.5 items-center h-full">
-                        <input 
-                          type="color" 
-                          value={tempVariant.color_code}
-                          onChange={(e) => setTempVariant(prev => ({ ...prev, color_code: e.target.value }))}
-                          className="w-10 h-7 rounded border cursor-pointer border-neutral-200"
-                        />
-                        <span className="font-mono text-[9px] text-neutral-400">{tempVariant.color_code}</span>
-                      </div>
-                    </div>
-                  </div>
+                <button 
+                  type="button" 
+                  onClick={appendVariantToWorkbench}
+                  className="w-full py-3.5 mt-3 bg-gradient-to-r from-[#BF953F] to-[#AA771C] font-bold tracking-[0.2em] text-white text-[11px] uppercase rounded-lg hover:shadow-lg hover:shadow-[#BF953F]/20 transform hover:-translate-y-0.5 transition-all cursor-pointer border-0"
+                >
+                  ADD VARIATION TO REGISTER
+                </button>
+              </div>
+            </section>
 
-                  <div className="grid grid-cols-3 gap-3 py-1">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-550 font-bold">Strap Size</span>
-                      <select 
-                        value={tempVariant.size}
-                        onChange={(e) => setTempVariant(prev => ({ ...prev, size: e.target.value }))}
-                        className="py-2 px-1.5 border border-neutral-200 rounded bg-white outline-none text-[11px]"
-                      >
-                        {['S', 'M', 'L', 'XL', 'XXL', 'Free Size'].map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-550 font-bold">Stack Weight</span>
-                      <input 
-                        type="number" 
-                        value={tempVariant.stock}
-                        onChange={(e) => setTempVariant(prev => ({ ...prev, stock: Number(e.target.value) }))}
-                        className="py-2 px-2 border border-neutral-200 rounded bg-white outline-none text-[11px]"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-550 font-bold">Adjust Price</span>
-                      <input 
-                        type="number" 
-                        placeholder="Equal"
-                        value={tempVariant.price || ''}
-                        onChange={(e) => setTempVariant(prev => ({ ...prev, price: e.target.value ? Number(e.target.value) : undefined }))}
-                        className="py-2 px-2 border border-neutral-200 rounded bg-white outline-none text-[11px]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Photo attachment for variations with storage uploader hook */}
-                  <div className="border-t border-neutral-200 pt-3 mt-1 flex justify-between items-center gap-2">
-                    <div className="text-left">
-                      <span className="text-[10px] font-bold text-neutral-500 block">Variation Photography</span>
-                      <span className="text-[9px] text-neutral-400">Attach distinct photography assets.</span>
-                    </div>
-                    <label className="px-3 py-1.5 bg-white border rounded text-[9px] font-bold text-neutral-600 cursor-pointer shadow-xs whitespace-nowrap">
-                      <span>CHOOSE PHOTO</span>
-                      <input type="file" accept="image/*" onChange={handleVariantUploader} className="hidden" />
-                    </label>
-                  </div>
-
-                  {tempVariant.main_image && (
-                    <div className="flex gap-3 items-center bg-white border border-neutral-250 p-2 rounded">
-                      <img src={tempVariant.main_image} className="w-10 h-12 object-cover rounded" />
-                      <span className="text-[9px] font-mono text-neutral-400 truncate">{tempVariant.main_image}</span>
-                    </div>
-                  )}
-
+            {/* REAL-TIME SIMULATOR PREVIEW PANEL */}
+            <section className="bg-neutral-50 border border-neutral-200 p-7 rounded-2xl shadow-xl shadow-neutral-200/50 relative text-left">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <span className="text-[10px] font-bold tracking-[0.2em] text-[#BF953F] uppercase block mb-1">LIVE ATELIER PREVIEW SANDBOX</span>
+                  <h3 className="font-serif text-xl text-neutral-900">Real-time Layout Modeling</h3>
+                </div>
+                <div className="flex gap-2 bg-white border border-neutral-200 p-1.5 rounded-xl shadow-sm">
                   <button 
-                    type="button" 
-                    onClick={appendVariantToWorkbench}
-                    className="w-full py-2.5 mt-2 bg-neutral-900 font-bold tracking-widest text-[#FCF6BA] text-[10px] uppercase rounded-lg hover:bg-black transition-all cursor-pointer shadow-sm"
+                    onClick={() => setPreviewMode('card')} 
+                    className={`px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg transition-all cursor-pointer ${previewMode === 'card' ? 'bg-neutral-900 text-white shadow-md' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
                   >
-                    ADD VARIATION TO REGISTER
+                    CARD
+                  </button>
+                  <button 
+                    onClick={() => setPreviewMode('details')} 
+                    className={`px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg transition-all cursor-pointer ${previewMode === 'details' ? 'bg-neutral-900 text-white shadow-md' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
+                  >
+                    DETAILS
                   </button>
                 </div>
-              </section>
+              </div>
 
-              {/* REAL-TIME SIMULATOR PREVIEW PANEL */}
-              <section className="bg-[#FAF9F6] border border-neutral-200 p-6 rounded-xl shadow-lg relative text-left">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <span className="text-[9px] font-bold tracking-[0.2em] text-[#BF953F] uppercase block">LIVE ATELIER PREVIEW SANDBOX</span>
-                    <h3 className="font-serif text-lg text-neutral-700 font-light">Real-time Layout Modeling</h3>
-                  </div>
-                  <div className="flex gap-1.5 bg-neutral-100 p-1 rounded-lg">
-                    <button 
-                      onClick={() => setPreviewMode('card')} 
-                      className={`px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded cursor-pointer ${previewMode === 'card' ? 'bg-[#111111] text-white' : 'text-neutral-500 hover:text-black'}`}
-                    >
-                      CARD
-                    </button>
-                    <button 
-                      onClick={() => setPreviewMode('details')} 
-                      className={`px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded cursor-pointer ${previewMode === 'details' ? 'bg-[#111111] text-white' : 'text-neutral-500 hover:text-black'}`}
-                    >
-                      DETAILS
-                    </button>
-                  </div>
-                </div>
-
-                {previewMode === 'card' ? (
-                  <div className="flex justify-center">
-                    <div className="w-[280px] bg-white border border-neutral-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
-                      <div className="aspect-[3/4] bg-neutral-100 rounded overflow-hidden relative">
-                        {formData.image ? (
-                          <img src={formData.image} className="w-full h-full object-cover object-top" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-neutral-350 text-[10px] font-mono">NO MAIN IMAGE</div>
-                        )}
-                        {formData.badge && (
-                          <span className="absolute top-2.5 left-2.5 bg-[#111111] text-[#FCF6BA] text-[8px] font-bold tracking-widest px-2 py-0.5 uppercase border border-[#BF953F]/30 rounded">{formData.badge}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-1 text-left">
-                        <span className="text-[8px] tracking-widest text-neutral-400 font-bold uppercase">{formData.category} / {formData.subcategory}</span>
-                        <h4 className="font-serif text-[13px] font-medium text-[#111111] leading-tight line-clamp-1">{formData.name || 'New Atelier Garment'}</h4>
-                        <span className="text-[12px] font-bold text-[#BF953F]">Rs. {(formData.price || 0).toLocaleString()}</span>
-                      </div>
+              {previewMode === 'card' ? (
+                <div className="flex justify-center">
+                  <div className="w-[300px] bg-white border border-neutral-100 rounded-2xl p-4 shadow-xl shadow-neutral-200/40 flex flex-col gap-4 group">
+                    <div className="aspect-[3/4] bg-neutral-100 rounded-xl overflow-hidden relative">
+                      {formData.image ? (
+                        <img src={formData.image} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-mono border-2 border-dashed border-neutral-200 rounded-xl">NO MAIN IMAGE</div>
+                      )}
+                      {formData.badge && (
+                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-neutral-900 text-[9px] font-extrabold tracking-widest px-2.5 py-1 uppercase rounded shadow-sm">{formData.badge}</span>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1.5 text-center px-2 pb-2">
+                      <span className="text-[9px] tracking-[0.2em] text-[#BF953F] font-bold uppercase">{formData.category} / {formData.subcategory}</span>
+                      <h4 className="font-serif text-[15px] font-medium text-neutral-900 leading-snug line-clamp-1">{formData.name || 'New Atelier Garment'}</h4>
+                      <span className="text-[13px] font-bold text-neutral-500 mt-1">Rs. {(formData.price || 0).toLocaleString()}</span>
                     </div>
                   </div>
-                ) : (
-                  <div className="bg-white border rounded-xl p-5 text-left text-xs self-stretch flex flex-col gap-4">
-                    <div className="grid grid-cols-5 gap-3">
-                      <div className="col-span-2 aspect-[3/4] bg-neutral-100 rounded overflow-hidden">
-                        {formData.image && <img src={formData.image} className="w-full h-full object-cover object-top" />}
+                </div>
+              ) : (
+                <div className="bg-white border border-neutral-100 shadow-xl shadow-neutral-200/40 rounded-2xl p-6 text-left self-stretch flex flex-col gap-5">
+                  <div className="grid grid-cols-5 gap-6">
+                    <div className="col-span-2 aspect-[3/4] bg-neutral-100 rounded-xl overflow-hidden shadow-inner">
+                      {formData.image ? <img src={formData.image} className="w-full h-full object-cover object-top" /> : <div className="w-full h-full flex items-center justify-center text-neutral-300 text-xs">IMG</div>}
+                    </div>
+                    <div className="col-span-3 flex flex-col justify-center gap-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-[#BF953F] tracking-[0.2em] font-bold uppercase">{formData.category} / {formData.subcategory}</span>
+                        <h3 className="font-serif text-2xl font-medium text-neutral-900 leading-tight">{formData.name || 'Untitled Garment'}</h3>
                       </div>
-                      <div className="col-span-3 flex flex-col gap-2">
-                        <span className="text-[9px] text-[#BF953F] tracking-widest font-bold uppercase">{formData.category} / {formData.subcategory}</span>
-                        <h3 className="font-serif text-base font-medium text-neutral-800 leading-tight">{formData.name || 'Untitled Garment'}</h3>
-                        <span className="text-sm font-bold text-[#BF953F]">Rs. {(formData.price || 0).toLocaleString()}</span>
-                        
-                        <div className="flex flex-col gap-1 mt-2">
-                          <span className="text-[9px] font-bold text-neutral-400">WEARABLE SIZES</span>
-                          <div className="flex gap-1">
-                            {(formData.sizes || []).map(s => (
-                              <span key={s} className="w-6 h-6 border rounded text-[8px] font-bold flex items-center justify-center text-neutral-600 bg-neutral-50">{s}</span>
-                            ))}
-                          </div>
+                      <span className="text-lg font-bold text-neutral-600">Rs. {(formData.price || 0).toLocaleString()}</span>
+                      
+                      <div className="flex flex-col gap-2 mt-3">
+                        <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Wearable Sizes</span>
+                        <div className="flex gap-2">
+                          {(formData.sizes || []).map(s => (
+                            <span key={s} className="min-w-[32px] h-8 px-2 border border-neutral-200 rounded-md text-[10px] font-bold flex items-center justify-center text-neutral-700 bg-neutral-50 shadow-sm">{s}</span>
+                          ))}
+                          {(!formData.sizes || formData.sizes.length === 0) && <span className="text-xs text-neutral-400 italic">No sizes selected</span>}
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="border-t pt-3 flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-neutral-400">FABRIC SPEC SHEET</span>
-                      <div className="text-[10px] flex flex-col divide-y divide-neutral-50 bg-neutral-50 p-2 rounded">
-                        <div className="py-1 flex justify-between"><span className="text-neutral-400">Composition</span><span className="font-semibold">{formData.specifications?.['Composition'] || 'N/A'}</span></div>
-                        <div className="py-1 flex justify-between"><span className="text-neutral-400">Collar / Fit</span><span className="font-semibold">{formData.specifications?.['Fit'] || 'N/A'}</span></div>
-                        <div className="py-1 flex justify-between"><span className="text-neutral-400">Origin</span><span className="font-semibold">{formData.specifications?.['Origin'] || 'N/A'}</span></div>
-                      </div>
+                  <div className="border-t border-neutral-100 pt-5 flex flex-col gap-3 mt-1">
+                    <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Fabric Spec Sheet</span>
+                    <div className="text-xs flex flex-col divide-y divide-neutral-100 bg-[#FAF9F6] p-4 rounded-xl border border-neutral-200/60">
+                      <div className="py-2.5 flex justify-between items-center"><span className="text-neutral-500">Composition</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Composition'] || 'N/A'}</span></div>
+                      <div className="py-2.5 flex justify-between items-center"><span className="text-neutral-500">Collar / Fit</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Fit'] || 'N/A'}</span></div>
+                      <div className="py-2.5 flex justify-between items-center"><span className="text-neutral-500">Origin</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Origin'] || 'N/A'}</span></div>
                     </div>
                   </div>
-                )}
-              </section>
+                </div>
+              )}
+            </section>
 
-              {/* SAVE OPERATIONS GROUP CONTAINER */}
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex-1 py-4 bg-white border border-neutral-300 font-bold tracking-widest text-[#111111] text-[10px] uppercase rounded-xl hover:bg-neutral-50 transition-all cursor-pointer text-center"
-                >
-                  CLEAR FORM
-                </button>
+            {/* SAVE OPERATIONS GROUP CONTAINER */}
+            <div className="flex gap-4 mt-2">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="flex-1 py-4.5 bg-white border-2 border-neutral-900 font-bold tracking-[0.2em] text-neutral-900 text-[11px] uppercase rounded-xl hover:bg-neutral-900 hover:text-white transition-all duration-300 cursor-pointer text-center"
+              >
+                CLEAR FORM
+              </button>
 
-                <button
-                  type="button"
-                  onClick={handleSaveProduct}
-                  disabled={actionLoading || isUploading}
-                  className="flex-[2] py-4 bg-[#BF953F] font-bold tracking-widest text-[#111111] text-[10px] uppercase rounded-xl hover:bg-[#AA771C] hover:text-white transition-all cursor-pointer text-center disabled:opacity-40 shadow-md"
-                >
-                  {actionLoading ? 'COMMITTING UPLOAD...' : editingId ? 'COMMIT OVERRIDES ✓' : 'LAUNCH GARMENT LIVE ✓'}
-                </button>
-              </div>
-
+              <button
+                type="button"
+                onClick={handleSaveProduct}
+                disabled={actionLoading || isUploading}
+                className="flex-[2] py-4.5 bg-gradient-to-r from-[#BF953F] to-[#AA771C] font-bold tracking-[0.2em] text-white text-[11px] uppercase rounded-xl hover:shadow-lg hover:shadow-[#BF953F]/40 transform hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center disabled:opacity-50 disabled:transform-none disabled:shadow-none border-0"
+              >
+                {actionLoading ? 'COMMITTING UPLOAD...' : editingId ? 'COMMIT OVERRIDES ✓' : 'LAUNCH GARMENT LIVE ✓'}
+              </button>
             </div>
 
           </div>
-        )}
 
-      </main>
+        </div>
+      )}
 
-    </div>
-  );
+    </main>
+
+  </div>
+);
 };

@@ -60,207 +60,224 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#FAF9F6] text-[#111111] min-h-screen">
+    <div 
+      className="bg-[#FAF6F0] text-[#332C2A] min-h-screen pb-20 relative selection:bg-[#FAD5A5]/40 selection:text-[#332C2A]"
+      style={{
+        backgroundSize: '44px 44px',
+        backgroundImage: `
+          linear-gradient(to right, rgba(51, 44, 42, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(51, 44, 42, 0.03) 1px, transparent 1px)
+        `
+      }}
+    >
       
-      {/* Hero Header Banner */}
-      <div className="relative py-16 bg-white border-b border-neutral-100 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=1400')` }} />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 animate-fade-in">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-2 block">
-            GET IN TOUCH
+      {/* HIGH-END VIGNETTE HERO BANNER (As per Screenshot) */}
+      <div 
+        className="relative py-28 bg-cover bg-center border-b border-[#E5DCD3] overflow-hidden text-center"
+        style={{ 
+          backgroundImage: `url('/5logo.jpeg')` 
+        }}
+      >
+        {/* Soft dark vignette luxury depth overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/80" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FAF6F0]/20 to-transparent" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto px-4">
+          <span className="text-[10px] tracking-[0.45em] uppercase text-[#FAD5A5] font-bold mb-3 block drop-shadow-sm">
+            MARKHOR CONCIERGE
           </span>
-          <h1 className="font-serif text-3xl sm:text-5xl font-light tracking-tight text-[#111111] mb-2 animate-fade-in">
+          <h1 className="font-serif text-5xl sm:text-6xl font-bold tracking-tight text-white mb-4 uppercase drop-shadow-md">
             Contact us
           </h1>
-          <p className="font-serif italic text-neutral-400 text-xs sm:text-sm max-w-md mx-auto">
+          <div className="w-16 h-[1.5px] bg-[#FAD5A5] mx-auto mb-4" />
+          <p className="font-sans text-neutral-300 text-sm sm:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed drop-shadow-sm">
             Contact us about anything related to our company or services.
           </p>
         </div>
       </div>
 
-      {/* Main Form + Info Split Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+      {/* MAIN LAYOUT SPLIT GRID */}
+      <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-16 items-start">
           
-          {/* L: DETAILED MESSAGE CONSOLE FORM */}
-          <div className="lg:col-span-12 xl:col-span-7 bg-white border border-[#111111]/5 rounded-xl p-8 shadow-[0_4px_30px_rgba(0,0,0,0.015)] font-sans">
-            <span className="text-[10px] tracking-[0.2em] font-bold text-[#BF953F] uppercase block mb-2">
-              REACH OUR CONCIERGE
+          {/* LEFT COLUMN: EDITORIAL FORM MODULE */}
+          <div className="lg:col-span-7 bg-transparent text-left">
+            <span className="text-[10px] tracking-[0.25em] font-bold text-[#C48F56] uppercase block mb-2">
+              GET IN TOUCH
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-light tracking-tight text-[#111111] mb-3">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#332C2A] mb-3 uppercase">
               Send us a Message
             </h2>
-            <p className="text-xs text-neutral-400 font-light mb-8 pb-4 border-b border-neutral-100">
-              Please enter your parameters below. Our priority support systems will route immediately.
+            <p className="text-xs sm:text-sm text-[#5C504C]/70 font-light tracking-wide mb-8 pb-5 border-b border-[#E5DCD3]">
+              Contact us about anything related to our company or services.
             </p>
 
-            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-6">
+            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-6 font-sans">
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                    Your Name <span className="text-[#BF953F] font-bold">*</span>
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase">
+                    NAME <span className="text-[#C48F56] font-bold">*</span>
                   </label>
                   <input 
                     type="text" 
                     placeholder="John Doe"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full text-xs text-[#111111] bg-[#FAF9F6]/50 border border-neutral-200 rounded-md py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] transition-all"
+                    className="w-full text-xs text-[#332C2A] bg-white border border-[#E5DCD3] rounded-lg py-4 px-4 outline-none focus:border-[#C48F56] transition-all shadow-sm"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                    Phone Number
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase">
+                    PHONE NUMBER
                   </label>
                   <input 
                     type="tel" 
-                    placeholder="+92 3XX XXXXXXX"
+                    placeholder="+1 555-555-5556"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full text-xs text-[#111111] bg-[#FAF9F6]/50 border border-neutral-200 rounded-md py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] transition-all"
+                    className="w-full text-xs text-[#332C2A] bg-white border border-[#E5DCD3] rounded-lg py-4 px-4 outline-none focus:border-[#C48F56] transition-all shadow-sm"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                    Email Address <span className="text-[#BF953F] font-bold">*</span>
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase">
+                    EMAIL <span className="text-[#C48F56] font-bold">*</span>
                   </label>
                   <input 
                     type="email" 
-                    placeholder="john@example.com"
+                    placeholder="example@mail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full text-xs text-[#111111] bg-[#FAF9F6]/50 border border-neutral-200 rounded-md py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] transition-all"
+                    className="w-full text-xs text-[#332C2A] bg-white border border-[#E5DCD3] rounded-lg py-4 px-4 outline-none focus:border-[#C48F56] transition-all shadow-sm"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                    Subject Line <span className="text-[#BF953F] font-bold">*</span>
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase">
+                    SUBJECT <span className="text-[#C48F56] font-bold">*</span>
                   </label>
                   <input 
                     type="text" 
-                    placeholder="Describe your request..."
+                    placeholder="Describe your request"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full text-xs text-[#111111] bg-[#FAF9F6]/50 border border-neutral-200 rounded-md py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] transition-all"
+                    className="w-full text-xs text-[#332C2A] bg-white border border-[#E5DCD3] rounded-lg py-4 px-4 outline-none focus:border-[#C48F56] transition-all shadow-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                  Detailed Message <span className="text-[#BF953F] font-bold">*</span>
+              <div className="flex flex-col gap-2.5">
+                <label className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase">
+                  MESSAGE <span className="text-[#C48F56] font-bold">*</span>
                 </label>
                 <textarea 
                   rows={5}
-                  placeholder="Write down your detailed inquiry here..."
+                  placeholder="Write down your message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full text-xs text-[#111111] bg-[#FAF9F6]/50 border border-neutral-200 rounded-md py-3.5 px-4 outline-none focus:bg-white focus:border-[#BF953F] resize-y"
+                  className="w-full text-xs text-[#332C2A] bg-white border border-[#E5DCD3] rounded-lg py-4 px-4 outline-none focus:border-[#C48F56] resize-y shadow-sm"
                 />
               </div>
 
-              <span className="text-[10px] text-neutral-400 tracking-wide block">
-                * We typically respond within 1-2 business days.
+              <span className="text-[11px] text-[#5C504C]/60 tracking-wide block font-light">
+                We typically respond within 1-2 business days.
               </span>
 
               {toastMsg && (
-                <div className="bg-[#111111] text-white rounded-lg p-3 text-xs tracking-wider text-center font-bold">
+                <div className="bg-[#332C2A] text-[#FAF6F0] rounded-xl p-3.5 text-xs tracking-wider text-center font-mono font-bold shadow-md">
                   {toastMsg}
                 </div>
               )}
 
-              {/* Dual triggers actions panel */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              {/* DUAL ACTION BUTTON PANEL (Matches Screenshot Layout & Colors) */}
+              <div className="flex flex-col gap-3.5 pt-2">
                 <button
                   type="button"
                   onClick={handleSendEmail}
-                  className="flex-1 py-3.5 rounded bg-[#111111] text-[#FCF6BA] text-[10px] font-bold tracking-widest uppercase hover:bg-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-4 bg-[#000000] text-white text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-neutral-900 transition-all cursor-pointer flex items-center justify-center gap-2.5 rounded-lg shadow-sm"
                 >
-                  <Send className="w-4 h-4 text-[#C9A84C]" /> SEND VIA INBOX EMAIL
+                  <Send className="w-4 h-4" /> SEND MESSAGE VIA EMAIL
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSendWhatsApp}
-                  className="flex-1 py-3.5 rounded bg-[#25D366] text-white text-[10px] font-bold tracking-widest uppercase hover:bg-[#128C7E] transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(37,211,102,0.2)] font-bold"
+                  className="w-full py-4 bg-[#25D366] text-white text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#20ba59] transition-all cursor-pointer flex items-center justify-center gap-2.5 rounded-lg shadow-md"
                 >
-                  <MessageSquare className="w-4 h-4" /> TEXT ON WHATSAPP
+                  <MessageSquare className="w-4 h-4" /> SEND VIA WHATSAPP
                 </button>
               </div>
 
             </form>
           </div>
 
-          {/* R: FLAGSHIP DETAIL SHOWROOM MODULE */}
-          <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-10">
+          {/* RIGHT COLUMN: SHOWROOM DETAILS PANEL */}
+          <div className="lg:col-span-5 flex flex-col gap-8 xl:pl-6 text-left">
             
-            {/* Showroom preview image */}
-            <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-xl border border-neutral-200/50">
+            {/* Elegant Studio Image Container */}
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-[#E5DCD3] shadow-lg group">
               <img 
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800" 
-                alt="Markhor Flagship Studio interior" 
-                className="w-full h-full object-cover object-center"
+                src="/2.jpeg" 
+                alt="Markhor Luxury Studio Interior" 
+                className="w-full h-full object-cover object-center group-hover:scale-101 transition-transform duration-700"
               />
             </div>
 
-            {/* List coordinates */}
+            {/* Premium Gold Coordinates Panel */}
             <div className="flex flex-col gap-6 font-sans">
               
-              <div className="flex gap-4">
-                <div className="w-11 h-11 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[#BF953F] flex-shrink-0 shadow-sm">
+              {/* Location */}
+              <div className="flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-[#B89047] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase mb-1">ATELIER LOGISTICS Location</h4>
-                  <p className="text-xs text-neutral-500 leading-relaxed font-light">
-                    Islamabad Highway Closeout Grids, Islamabad, Pakistan
+                  <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase mb-0.5">LOCATION</h4>
+                  <p className="text-xs text-[#5C504C] font-light leading-relaxed">
+                    Gilgit Baltistan, Pakistan
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <div className="w-11 h-11 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[#BF953F] flex-shrink-0 shadow-sm">
+              {/* WhatsApp */}
+              <div className="flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-[#B89047] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                   <MessageSquare className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase mb-1">WhatsApp Direct</h4>
-                  <p className="text-xs text-neutral-500 leading-relaxed font-light">
-                    <a href="https://wa.me/923555107132" target="_blank" rel="noopener noreferrer" className="text-[#111111] hover:text-[#BF953F] font-bold transition-colors underline decoration-[#BF953F]/40">
-                      +92 355 510 7132
-                    </a>
+                  <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase mb-0.5">WHATSAPP</h4>
+                  <p className="text-xs font-bold text-[#332C2A] tracking-wide">
+                    +92 355 510 7132
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <div className="w-11 h-11 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[#BF953F] flex-shrink-0 shadow-sm">
+              {/* Email */}
+              <div className="flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-[#B89047] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase mb-1">Direct Support</h4>
-                  <p className="text-xs text-neutral-500 leading-relaxed font-light">
-                    <a href="mailto:nestandnifty07@gmail.com" className="text-[#111111] hover:text-[#BF953F] font-bold transition-colors underline decoration-[#BF953F]/40">
-                      nestandnifty07@gmail.com
-                    </a>
+                  <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase mb-0.5">EMAIL</h4>
+                  <p className="text-xs font-bold text-[#332C2A] tracking-wide break-all">
+                    nestandnifty07@gmail.com
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <div className="w-11 h-11 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[#BF953F] flex-shrink-0 shadow-sm">
+              {/* Business Hours */}
+              <div className="flex items-center gap-5">
+                <div className="w-12 h-12 rounded-full bg-[#B89047] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold tracking-[0.15em] text-[#BF953F] uppercase mb-1">Showroom Timings</h4>
-                  <p className="text-xs text-neutral-500 leading-relaxed font-light">
-                    Mon–Sat: 9:00 AM – 10:00 PM <br />
-                    Sunday Reserved for Concierge Bespoke Appoints.
+                  <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#332C2A] uppercase mb-0.5">BUSINESS HOURS</h4>
+                  <p className="text-xs text-[#5C504C] font-light leading-relaxed">
+                    Mon–Sat: 9 AM – 10 PM
                   </p>
                 </div>
               </div>
