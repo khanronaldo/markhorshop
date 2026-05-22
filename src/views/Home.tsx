@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ThreeShowcase } from '../components/ThreeShowcase';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Product, ViewType } from '../types';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
-import { Truck, Navigation, Shield, Star, ChevronDown, ArrowRight, ShieldCheck, CornerDownRight } from 'lucide-react';
+import { 
+  Truck, Navigation, ShieldCheck, ChevronDown, CornerDownRight, 
+  Shirt, Layers, Diamond, Star
+} from 'lucide-react';
 
 interface HomeProps {
   onViewChange: (view: ViewType) => void;
@@ -15,467 +17,391 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
   const { addToCart } = useCart();
   const { products } = useProducts();
 
-  // Testimonial Carousel state
+  // --- AUTO-FADE TESTIMONIALS STATE ---
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const testimonials = [
-    {
-      quote: "Dress is both stylish and super comfy! Unmatched premium fabrics.",
-      name: "Asad Khan",
-      role: "Founder / Client",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"
-    },
-    {
-      quote: "The structured cuts and double-twill linen collars completely changed my styling catalog.",
-      name: "Zubair Ahmed",
-      role: "Luxe Collector",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150"
-    },
-    {
-      quote: "Delivery was swift, packing was immaculate. Standard of care is absolutely premium.",
-      name: "Hassan Malik",
-      role: "Gentleman Client",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150"
-    }
+    { quote: "THE QUALITY OF THE FABRIC IS AMAZING. THE FIT IS PERFECT AND IT FEELS TRULY PREMIUM.", name: "HARIS KHAN", role: "Verified Buyer" },
+    { quote: "BEST CLOTHING STORE ONLINE. THE STITCHING AND MATERIAL WEIGHT IS UNBELIEVABLY RICH.", name: "SAMEER AHMED", role: "Regular Customer" },
+    { quote: "IMMACULATE ATTENTION TO DETAIL. THE PACKAGING AND DELIVERY WAS SPOT ON.", name: "DANIYAL SHAH", role: "Verified Buyer" },
+    { quote: "FINALLY, A BRAND THAT DELIVERS EXACTLY WHAT THEY SHOW IN PREMIUM QUALITY. HIGHLY RECOMMENDED.", name: "ZAIN MALIK", role: "Loyal Customer" },
+    { quote: "FROM FABRIC TO THE FINAL FIT, EVERYTHING IS ABSOLUTELY MAGNIFICENT. WILL SHOP AGAIN!", name: "BILAL SHEIKH", role: "Premium Member" }
   ];
 
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  // --- FAQS STATE ---
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const faqList = [
+    { q: "What types of premium clothing do you offer?", a: "We specialize in premium men's apparel including signature embroidered T-shirts, high-grade twill cargo trousers, french terry hoodies, and luxury smart-casual shirts built for maximum comfort and style." },
+    { q: "How can I choose my perfect size?", a: "We have a detailed size chart available on every product page. If you are confused between sizes, our customer support team can assist you instantly via WhatsApp." },
+    { q: "What is your exchange and return policy?", a: "We offer a hassle-free 7-day exchange policy. The item must be unworn, unwashed, and in its original premium packaging with tags intact." },
+    { q: "How long does the delivery take?", a: "We provide swift dispatch across Pakistan. All orders are delivered to your doorstep within 2 to 3 business days with complete tracking updates." }
+  ];
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const testimonialTimer = setInterval(() => {
       setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    }, 4000);
+    return () => clearInterval(testimonialTimer);
   }, [testimonials.length]);
-
-  // FAQ Accordion state
-  const faqList = [
-    {
-      q: "What products does your clothing store offer?",
-      a: "We offer a carefully designed collection of men's luxury apparel including signature gold-embroidered T-shirts, premium twill cargo trousers, french terry hoodies, tailored club collar linen shirts, and custom-embossed accessories. All items are crafted in limited batches to ensure perfect standards."
-    },
-    {
-      q: "How can I contact customer support?",
-      a: "Our customer service concierge is available 24/7. You can reach out directly via our Contact form, initiate a conversational WhatsApp thread with our managers, or email us at nestandnifty07@gmail.com for formal inquires."
-    },
-    {
-      q: "What is your return policy?",
-      a: "Products must be in their original condition, unworn, and include the receipt or proof of purchase. Refunds are processed within 5-7 business days of receiving the returned item at our Islamabad warehousing facility."
-    },
-    {
-      q: "How long does delivery take?",
-      a: "All orders receive complimentary express dispatch. Ground transportation and luxury shipping takes 2-3 business days across Pakistan, complete with real-time text tracking notifications."
-    },
-    {
-      q: "Do you offer size exchanges?",
-      a: "Yes. We offer complimentary size exchanges within 7 days of delivery receipt, provided the tags remain attached and garments are returned in pristine, unworn condition."
-    }
-  ];
-
-  const [openFaq, setOpenFaq] = useState<number | null>(2); // Default open policy page
 
   const handleProductClick = (p: Product) => {
     onSelectProduct(p);
     onViewChange('product');
   };
 
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
-  };
-
-  const fadeInUpItem = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 25, stiffness: 100 } }
+  // REUSABLE ANIMATION CONFIG FOR 2-SECOND SLOW REVEAL ON SCROLL
+  const slowFadeUp = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 2, ease: [0.25, 0.8, 0.25, 1] } }
   };
 
   return (
-    <div className="bg-[#FAF9F6] text-[#111111] overflow-hidden">
+    <div className="text-[#000000] overflow-hidden selection:bg-[#D4AF37] selection:text-[#000000] bg-[#FAF9F6]">
       
-      {/* 1. CINEMATIC LIGHT HERO SECTION */}
-      <section className="relative min-h-[90vh] w-full flex items-center justify-center pt-20 overflow-hidden bg-gradient-to-b from-white to-[#FAF9F6]">
+      {/* EXTRACTED HTML/CSS STYLES */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
         
-        {/* Parallax Flagship Background */}
+        .font-luxury-serif { font-family: 'Playfair Display', serif; }
+        .font-luxury-sans { font-family: 'Montserrat', sans-serif; }
+
+        .liquid-gold-text {
+          background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 0 10px rgba(201, 168, 76, 0.3)) drop-shadow(0 0 25px rgba(184, 151, 90, 0.5));
+          animation: liquidGold 5s linear infinite;
+        }
+
+        @keyframes liquidGold {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+
+        .shining-gold-btn {
+          background-color: #D4AF37;
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+          transition: all 0.4s ease-in-out;
+        }
+        .shining-gold-btn:hover {
+          background-color: #BF953F;
+          box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+        }
+      `}</style>
+
+      {/* 1. HERO SECTION */}
+      <section className="relative h-[90vh] sm:h-screen w-full flex items-center justify-center overflow-hidden bg-[#000000]">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.28] pointer-events-none"
-          style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600')`,
-            backgroundAttachment: 'fixed'
-          }}
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-[0.35]" 
+          style={{ backgroundImage: `url('/mainimage.jpeg')`, backgroundPosition: 'center 75%' }} 
         />
-
-        {/* Soft elegant gradient vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FAF9F6]/50 to-[#FAF9F6]" />
-
-        {/* Core Layout Split */}
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 py-12">
-          
-          {/* Hero Explanatory Typography Panel */}
-          <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
-            
-            <motion.span 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="font-sans text-[10px] sm:text-xs font-bold tracking-[0.35em] text-[#BF953F] mb-4 uppercase"
-            >
-              INTRODUCING THE ESSENTIALS
-            </motion.span>
-
-            <motion.h1 
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="font-serif text-4xl sm:text-6xl xl:text-7xl font-light tracking-tight leading-[1.1] mb-6 text-[#111111]"
-            >
-              Suite for the <br />
-              <span className="font-semibold italic text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] via-[#a8893a] to-[#AA771C] drop-shadow-[0_2px_8px_rgba(201,168,76,0.15)]">
-                Modern Journey
-              </span>
-            </motion.h1>
-
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="font-sans text-sm sm:text-base text-neutral-500 leading-relaxed font-light max-w-lg mb-10"
-            >
-              Premium clothing engineering that fuses clean structural tailoring with resilient contemporary streetwear. Made with respect for people and the planet.
-            </motion.p>
-
-            {/* Interaction Call-To-Actions */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-              className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-            >
-              <button 
-                onClick={() => onViewChange('shop')}
-                className="w-full sm:w-auto px-8 py-4 rounded bg-[#111111] text-[#FCF6BA] text-xs font-bold tracking-widest uppercase transition-all duration-300 transform hover:scale-103 hover:bg-black shadow-[0_8px_24px_rgba(0,0,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
-              >
-                DISCOVER THE COLLECTION <ArrowRight className="w-4 h-4 text-[#C9A84C]" />
-              </button>
-              
-              <button 
-                onClick={() => onViewChange('about')}
-                className="w-full sm:w-auto px-8 py-4 rounded border border-neutral-200 bg-white text-xs text-[#111111] hover:bg-neutral-50 tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center font-semibold"
-              >
-                OUR HERITAGE
-              </button>
-            </motion.div>
-          </div>
-
-          {/* Interactive Floating 3D Gold Ribbon Geometry Canvas */}
-          <div className="lg:col-span-5 h-[350px] sm:h-[450px] w-full flex items-center justify-center relative">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 1.0 }}
-              className="w-full h-full"
-            >
-              <ThreeShowcase />
-            </motion.div>
-          </div>
-
-        </div>
-
-        {/* Scroll helper indicator */}
-        <div className="absolute bottom-6 left-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#111111]/30 text-[10px] tracking-[0.2em] uppercase">
-          <span className="animate-pulse">SCROLL</span>
-          <div className="w-[1px] h-10 bg-gradient-to-b from-[#BF953F] to-transparent animate-bounce" />
-        </div>
-      </section>
-
-      {/* 2. THE BRAND PHILOSOPHY STATEMENT */}
-      <section className="py-24 bg-white relative border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          <div className="flex flex-col">
-            <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-3">OUR HERITAGE</span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-light tracking-tight leading-tight mb-6 text-[#111111]">
-              Crafted with <br />
-              <span className="font-normal italic text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] to-[#a8893a]">Purpose &amp; Soul</span>
-            </h2>
-            <div className="w-14 h-[1px] bg-[#C9A84C] mb-8" />
-            
-            <blockquote className="font-serif text-lg sm:text-xl italic text-neutral-800 border-l-2 border-[#C9A84C] pl-6 py-1 mb-8">
-              "Style that respects people and the planet."
-            </blockquote>
-
-            <p className="text-sm leading-relaxed text-neutral-500 font-light mb-4">
-              Markhor Collection creates clothing that blends style, quality, and responsibility. We believe in making clothes that look good, feel good, and are made with respect for people and the planet.
-            </p>
-            <p className="text-sm leading-relaxed text-neutral-500 font-light">
-              Our designs are inspired by strength and elegance, offering timeless pieces for everyone while staying committed to ethical practices and sustainability.
-            </p>
-          </div>
-
-          <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden border border-black/5 shadow-2xl">
-            <div className="absolute inset-0 bg-neutral-900/10 z-10" />
-            <img 
-              src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=800"
-              alt="Artisan sewing workshop"
-              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-            />
-          </div>
-
-        </div>
-      </section>
-
-      {/* 3. FEATURED PRODUCTS SECTION */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12">
-          <div>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-2 block">
-              CURATED SELECTIONS
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight text-[#111111]">
-              Featured Flagship Pieces
-            </h2>
-          </div>
-          <button 
-            onClick={() => onViewChange('shop')}
-            className="group flex items-center gap-2 text-xs font-bold tracking-widest text-[#BF953F] hover:text-[#111111] uppercase transition-colors duration-300 cursor-pointer"
-          >
-            VIEW ENTIRE FLOOR <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        {/* Product Grid */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.2) 40%, rgba(201,168,76,0.15) 100%)' }} />
+        
         <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial="hidden" 
+          animate="visible" 
+          variants={slowFadeUp} 
+          className="max-w-5xl mx-auto px-6 relative z-10 text-center flex flex-col items-center"
         >
-          {products.slice(0, 3).map((p) => (
-            <motion.div 
-              key={p.id}
-              variants={fadeInUpItem}
-              className="bg-white border border-[#111111]/5 rounded-xl overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300 hover:border-[#BF953F]/40 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col h-full"
-            >
-              {/* Product Media */}
-              <div 
-                className="relative aspect-[3/4] overflow-hidden bg-[#FAF9F6] cursor-pointer"
-                onClick={() => handleProductClick(p)}
-              >
-                <img 
-                  src={p.image} 
-                  alt={p.name} 
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
-                
-                {p.badge && (
-                  <span className="absolute top-4 left-4 bg-[#111111] text-[#FCF6BA] text-[9px] font-bold tracking-[0.2em] py-1 px-3 border border-[#C9A84C]/20 uppercase rounded shadow-sm">
-                    {p.badge}
-                  </span>
-                )}
-                
-                {/* Overlay Button */}
-                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleProductClick(p);
-                    }}
-                    className="px-6 py-3.5 rounded bg-white text-[#111111] text-[10px] font-bold tracking-widest uppercase hover:bg-black hover:text-[#FCF6BA] transition-all duration-300 shadow-md"
-                  >
-                    QUICK VIEW
-                  </button>
-                </div>
-              </div>
-
-              {/* Specs & Pricing */}
-              <div className="p-6 flex flex-col flex-1">
-                <span className="text-[10px] text-neutral-400 font-semibold tracking-widest uppercase mb-1">
-                  MEN'S PREMIUM COLLECTION
-                </span>
-                <h3 
-                  onClick={() => handleProductClick(p)}
-                  className="font-serif text-lg font-normal tracking-wide text-[#111111] hover:text-[#BF953F] cursor-pointer transition-colors mb-2"
-                >
-                  {p.name}
-                </h3>
-                <div className="text-sm font-sans font-bold text-[#BF953F] mt-1 mb-4">
-                  Rs. {p.price.toLocaleString()}
-                </div>
-                
-                <button
-                  onClick={() => addToCart(p, p.sizes[0], p.colors[0])}
-                  className="w-full mt-auto py-3 rounded bg-[#FAF9F6] border border-black/5 text-[10px] font-bold tracking-widest text-[#111111] hover:bg-[#111111] hover:text-white hover:border-[#111111] transition-all duration-300 uppercase cursor-pointer"
-                >
-                  ADD TO CART
-                </button>
-              </div>
-
-            </motion.div>
-          ))}
+          <span className="text-[11px] tracking-[0.35em] uppercase text-[#D4AF37] font-bold mb-6 block font-luxury-sans">
+            PREMIUM FASHION STORE
+          </span>
+          <h1 className="font-luxury-serif text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight uppercase">
+            <span className="liquid-gold-text block leading-normal">WELCOME TO MARKHOR COLLECTIONS</span>
+          </h1>
+          <p className="font-luxury-serif text-lg sm:text-xl italic text-white/75 mt-4 max-w-2xl tracking-wider">
+            Premium Quality Apparel & Everyday Essentials
+          </p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 2, delay: 0.5, ease: "easeOut" }} 
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-12 w-full sm:w-auto"
+          >
+            <button onClick={() => onViewChange('shop')} className="w-full sm:w-auto px-10 py-4 shining-gold-btn text-[#000000] font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-none">
+              SHOP COLLECTION
+            </button>
+            <button onClick={() => onViewChange('about')} className="w-full sm:w-auto px-10 py-4 border border-white/30 text-white font-luxury-sans font-medium text-xs tracking-[0.25em] uppercase hover:bg-white/10 transition-all cursor-pointer rounded-none">
+              OUR BRAND STORY
+            </button>
+          </motion.div>
         </motion.div>
       </section>
 
-      {/* 4. PREMIUM BENEFITS */}
-      <section className="py-24 bg-white border-t border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-[11px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-2 block">WHY CHOOSE US</span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight text-[#111111] mb-2">Customer Benefits</h2>
-            <p className="text-xs sm:text-sm italic text-neutral-500 font-serif">Enjoy these added advantages with every premium purchase</p>
+      {/* 2. STORE BRAND PHILOSOPHY */}
+      <section className="py-24 bg-[#F7E7CE] relative overflow-hidden">
+        <div className="absolute -top-[100px] -right-[100px] w-[500px] h-[500px] rounded-full border border-[#C9A84C]/20" />
+        
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.3 }} 
+          variants={slowFadeUp}
+          className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10"
+        >
+          <div className="space-y-6">
+            <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold block font-luxury-sans">THE FABRIC STANDARD</span>
+            <h2 className="font-luxury-serif text-4xl sm:text-5xl text-[#000000] font-bold leading-tight">Premium Materials,<br /><span className="italic font-light">Flawless Fit</span></h2>
+            
+            <blockquote className="font-luxury-serif text-2xl italic text-[#000000] border-l-4 border-[#D4AF37] pl-6 my-8 leading-relaxed">
+              "We don't just sell clothes; we upgrade your everyday style wardrobe."
+            </blockquote>
+            
+            <p className="font-luxury-sans text-[15px] leading-loose text-[#000000]/80 font-medium max-w-md">
+              At Markhor Collections, we focus on sourcing high-grade fabrics, durable stitching, and modern designs. Every piece in our store is carefully engineered to ensure maximum comfort and long-lasting premium wear.
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-[#FAF9F6] border border-black/5 rounded-xl p-8 text-center hover:border-[#BF953F]/30 hover:bg-white transition-all duration-300 group shadow-sm">
-              <div className="w-14 h-14 rounded-full bg-[#111111] text-[#FCF6BA] flex items-center justify-center mx-auto mb-6 shadow-md group-hover:scale-105 transition-transform">
-                <Truck className="w-5 h-5 text-[#C9A84C]" />
-              </div>
-              <h3 className="font-serif text-lg font-medium tracking-wide text-[#111111] mb-2">Fast Delivery</h3>
-              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-light">Get your clothing delivered quickly across major metropolitan sites.</p>
-            </div>
-
-            <div className="bg-[#FAF9F6] border border-black/5 rounded-xl p-8 text-center hover:border-[#BF953F]/30 hover:bg-white transition-all duration-300 group shadow-sm">
-              <div className="w-14 h-14 rounded-full bg-[#111111] text-[#FCF6BA] flex items-center justify-center mx-auto mb-6 shadow-md group-hover:scale-105 transition-transform">
-                <Navigation className="w-5 h-5 text-[#C9A84C]" />
-              </div>
-              <h3 className="font-serif text-lg font-medium tracking-wide text-[#111111] mb-2">Order Tracking</h3>
-              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-light">Track your shipment details in real-time, from dispatch to threshold check.</p>
-            </div>
-
-            <div className="bg-[#FAF9F6] border border-black/5 rounded-xl p-8 text-center hover:border-[#BF953F]/30 hover:bg-white transition-all duration-300 group shadow-sm">
-              <div className="w-14 h-14 rounded-full bg-[#111111] text-[#FCF6BA] flex items-center justify-center mx-auto mb-6 shadow-md group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-5 h-5 text-[#C9A84C]" />
-              </div>
-              <h3 className="font-serif text-lg font-medium tracking-wide text-[#111111] mb-2">24/7 Support</h3>
-              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-light">Our dedicated managers are online Day &amp; Night to guide adjustments and orders.</p>
-            </div>
+          
+          {/* Philosophy Section Image Box with Gold Frame Layout */}
+          <div className="relative aspect-square">
+            <img 
+              src="/5logo.jpeg" 
+              alt="Markhor Collections Philosophy" 
+              className="w-full h-full object-cover shadow-2xl rounded-lg relative z-10"
+            />
+            <div className="absolute -top-3 -left-3 -right-3 -bottom-3 border-2 border-[#D4AF37] rounded-lg z-0" />
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 5. GESTURE-TAP CAROUSEL TESTIMONIALS */}
-      <section className="py-24 bg-[#FAF9F6] relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-3 block">TESTIMONIALS</span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight mb-16 text-[#111111]">What Our Customers Say</h2>
-
-          <div className="relative min-h-[200px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.03 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 120 }}
-                className="w-full"
+      {/* 3. STORE CATEGORIES */}
+      <section className="py-24 bg-[#FAF9F6]">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.2 }} 
+          className="max-w-7xl mx-auto px-6 text-center"
+        >
+          <motion.span variants={slowFadeUp} className="text-[10px] tracking-[0.4em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">STORE CATEGORIES</motion.span>
+          <motion.h2 variants={slowFadeUp} className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold mb-16 tracking-wide uppercase">Explore Our Outfits</motion.h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: Shirt, title: "Premium Essentials", desc: "Everyday luxury staples including high-quality basic tees, polos, and classic shirts designed for all-day comfort." },
+              { icon: Layers, title: "Modern Streetwear", desc: "Trend-forward drops featuring perfect oversized silhouettes, heavy cotton hoodies, and signature aesthetics." },
+              { icon: Diamond, title: "Tailored Trousers & Tights", desc: "Premium bottom-wear ranging from structural cargo pants to highly tailored casual trousers for the perfect fit." }
+            ].map((item, index) => (
+              <motion.div 
+                key={index}
+                variants={{
+                  hidden: { opacity: 0, y: 50 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: index * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                }}
+                className="bg-[#F7E7CE] px-10 py-14 rounded-xl border border-[#C9A84C]/20 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center relative"
               >
-                <p className="font-serif text-xl sm:text-2xl font-light italic leading-relaxed text-[#111111] max-w-2xl mx-auto mb-8 relative">
-                  <span className="absolute -top-6 -left-4 text-6xl text-[#C9A84C]/25 font-serif leading-none">“</span>
-                  {testimonials[activeTestimonial].quote}
-                  <span className="absolute -bottom-12 -right-4 text-6xl text-[#C9A84C]/25 font-serif leading-none">”</span>
-                </p>
+                <item.icon className="w-12 h-12 text-[#000000] mb-6 stroke-[1.2]" />
+                <h3 className="font-luxury-serif text-[1.4rem] text-[#000000] mb-4 font-bold tracking-wide">{item.title}</h3>
+                <p className="font-luxury-sans text-[#000000]/85 text-[15px] leading-loose font-medium">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
 
-                <div className="flex items-center justify-center gap-3">
-                  <img 
-                    src={testimonials[activeTestimonial].avatar} 
-                    alt={testimonials[activeTestimonial].name} 
-                    className="w-10 h-10 object-cover rounded-full border border-[#BF953F]/40 shadow-sm"
-                  />
-                  <div className="text-left">
-                    <div className="text-xs font-bold tracking-widest text-[#BF953F] uppercase">{testimonials[activeTestimonial].name}</div>
-                    <div className="text-[10px] text-neutral-400 tracking-wide mt-0.5">{testimonials[activeTestimonial].role}</div>
+      {/* 4. FEATURED PRODUCTS */}
+      <section className="py-24 px-6 bg-white">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.2 }}
+          className="max-w-7xl mx-auto"
+        >
+          <motion.div variants={slowFadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-14 border-b border-[#000000]/10 pb-8">
+            <div>
+              <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">FEATURED RELEASES</span>
+              <h2 className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold tracking-wide">Trending In Store</h2>
+            </div>
+            <button onClick={() => onViewChange('shop')} className="px-6 py-3 border-2 border-[#000000] text-[#000000] text-[10px] font-luxury-sans font-bold tracking-[0.2em] uppercase hover:bg-[#000000] hover:text-white transition-all cursor-pointer rounded-none">
+              VIEW ALL PRODUCTS
+            </button>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {products.slice(0, 3).map((p, index) => (
+              <motion.div 
+                key={p.id} 
+                variants={{
+                  hidden: { opacity: 0, y: 50 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: index * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                }}
+                className="group cursor-pointer flex flex-col" 
+                onClick={() => handleProductClick(p)}
+              >
+                <div className="aspect-[3/4] overflow-hidden bg-[#FAF9F6] mb-5 relative border border-[#000000]/10 rounded-lg">
+                  <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-[#000000]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="bg-white text-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] py-3 px-6 shadow-xl rounded-sm">VIEW DETAILS</span>
                   </div>
                 </div>
+                <h3 className="font-luxury-serif text-lg mb-1.5 text-[#000000] tracking-wide font-bold">{p.name}</h3>
+                <p className="font-luxury-sans text-[#000000]/80 font-semibold text-sm mb-4">RS. {p.price.toLocaleString()}</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); addToCart(p, p.sizes?.[0] || 'M', p.colors?.[0] || 'Black'); }} 
+                  className="w-full py-3.5 border border-[#000000]/20 hover:border-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] uppercase bg-transparent text-[#000000] hover:bg-[#000000] hover:text-white transition-all mt-auto rounded-none"
+                >
+                  ADD TO CART
+                </button>
               </motion.div>
-            </AnimatePresence>
+            ))}
           </div>
+        </motion.div>
+      </section>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center gap-2 mt-12">
+      {/* 5. CUSTOMER SHOPPING BENEFITS */}
+      <section className="py-24 bg-[#000000] relative overflow-hidden px-6">
+        <div className="absolute -top-[150px] -right-[150px] w-[400px] h-[400px] border border-[#C9A84C]/10 rounded-full" />
+        
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.2 }}
+          className="max-w-7xl mx-auto relative z-10 text-center"
+        >
+          <span className="text-[10px] tracking-[0.35em] uppercase text-[#D4AF37] font-bold mb-3 block font-luxury-sans">SHOP WITH CONFIDENCE</span>
+          <h2 className="font-luxury-serif text-3xl sm:text-4xl text-white font-bold tracking-wide mb-16 uppercase">Our Premium Store Services</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { icon: Truck, title: "Free Delivery Nationwide", desc: "Enjoy completely free express shipping across Pakistan on every order you place." },
+              { icon: Navigation, title: "Instant Tracked Dispatch", desc: "Track your clothing order in real-time right from our warehouse straight to your doorstep." },
+              { icon: ShieldCheck, title: "7-Day Easy Exchanges", desc: "Facing sizing issues? Exchange your apparel smoothly with our friendly support system." }
+            ].map((ben, i) => (
+              <motion.div 
+                key={i}
+                variants={{
+                  hidden: { opacity: 0, y: 50 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: i * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                }}
+                className="bg-white/5 border border-white/10 p-10 rounded-xl flex flex-col items-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 hover:-translate-y-1 transition-all duration-300 backdrop-blur-md group"
+              >
+                <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-[#BF953F] to-[#AA771C] text-white flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(201,168,76,0.3)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                  <ben.icon className="w-8 h-8 stroke-[1.5]" />
+                </div>
+                <h3 className="font-luxury-serif text-[1.2rem] text-white mb-3 tracking-wide font-bold">{ben.title}</h3>
+                <p className="font-luxury-sans text-white/60 text-[14px] leading-loose font-medium max-w-xs">{ben.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 6. WHAT OUR CUSTOMERS SAY */}
+      <section className="py-24 bg-[#F7E7CE] overflow-hidden">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.3 }} 
+          variants={slowFadeUp}
+          className="max-w-4xl mx-auto px-6 text-center"
+        >
+          <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">CUSTOMER REVIEWS</span>
+          <h2 className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold tracking-wide mb-14 uppercase">Feedback From Our Buyers</h2>
+          
+          <div className="bg-white rounded-xl p-10 sm:p-16 relative shadow-[0_10px_30px_rgba(0,0,0,0.05)] min-h-[340px] flex flex-col justify-center max-w-[700px] mx-auto">
+             <span className="absolute -top-6 left-6 text-[8rem] text-[#D4AF37] opacity-15 leading-none select-none font-luxury-serif">“</span>
+             
+             <div className="relative overflow-hidden flex-1 flex flex-col justify-center z-10">
+               <AnimatePresence mode="wait">
+                 <motion.div
+                   key={activeTestimonial}
+                   initial={{ opacity: 0, y: 15 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   exit={{ opacity: 0, y: -15 }}
+                   transition={{ duration: 0.5, ease: "easeOut" }}
+                   className="w-full"
+                 >
+                   <p className="font-luxury-serif text-[1.4rem] font-light italic text-[#000000] leading-relaxed mb-8">
+                     "{testimonials[activeTestimonial].quote}"
+                   </p>
+                   <div className="flex flex-col items-center">
+                      <h4 className="font-luxury-sans font-bold tracking-[0.18em] text-[12px] text-[#000000] uppercase">{testimonials[activeTestimonial].name}</h4>
+                      <p className="font-luxury-sans text-[10px] text-[#000000]/60 uppercase tracking-wider mt-1">{testimonials[activeTestimonial].role}</p>
+                   </div>
+                 </motion.div>
+               </AnimatePresence>
+             </div>
+
+             <div className="flex gap-1.5 mt-6 justify-center">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />)}
+             </div>
+          </div>
+          
+          <div className="flex justify-center gap-2 mt-8">
             {testimonials.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTestimonial(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  activeTestimonial === idx ? 'w-6 bg-[#BF953F]' : 'w-1.5 bg-neutral-200'
-                }`}
+              <button 
+                key={idx} 
+                onClick={() => setActiveTestimonial(idx)} 
+                className={`h-2 transition-all duration-300 cursor-pointer rounded-full ${activeTestimonial === idx ? 'w-8 bg-[#D4AF37] scale-110' : 'w-2 bg-[#000000]/20'}`} 
               />
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 6. FAQ HEIGHT-TRANSITIONAL ACCORDION CONTAINER */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto border-t border-black/5">
-        <div className="text-center mb-16">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-[#BF953F] font-bold mb-2 block">HELP CENTER</span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight text-[#111111]">Frequently asked questions</h2>
-          <div className="w-12 h-[1px] bg-[#C9A84C] mx-auto mt-4" />
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {faqList.map((faq, index) => {
-            const isOpen = openFaq === index;
-            return (
-              <div 
-                key={index}
-                className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 ${
-                  isOpen ? 'border-[#BF953F]/40 shadow-[0_4px_24px_rgba(0,0,0,0.03)]' : 'border-black/5'
-                }`}
-              >
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : index)}
-                  className="w-full text-left font-sans text-xs sm:text-sm font-bold tracking-widest text-[#111111] uppercase py-5 px-6 flex items-center justify-between gap-4 select-none cursor-pointer"
-                >
-                  <span className="leading-tight">{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 text-[#BF953F] flex-shrink-0 transition-transform duration-300 ${
-                    isOpen ? 'rotate-180' : ''
-                  }`} />
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    >
-                      <div className="px-6 pb-6 text-xs sm:text-sm text-neutral-500 leading-relaxed font-light border-t border-neutral-100 pt-4 flex gap-2">
-                        <CornerDownRight className="w-4 h-4 text-[#BF953F] flex-shrink-0 mt-0.5" />
-                        <p>{faq.a}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
+      {/* 7. FAQ'S SECTION */}
+      <section className="py-24 bg-white px-6">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.3 }} 
+          variants={slowFadeUp}
+          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16"
+        >
+          <div className="lg:col-span-5">
+            <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">STORE HELP DESK</span>
+            <h2 className="font-luxury-serif text-4xl text-[#000000] font-bold leading-tight mb-6">Got Any<br />Questions?</h2>
+            <div className="w-12 h-[2px] bg-[#000000] mb-6" />
+            <p className="font-luxury-sans text-[#000000]/70 font-medium text-[14px] leading-loose max-w-xs mb-8">Can't find what you are looking for? Contact our customer support team directly for fast assistance with your order.</p>
+            <button onClick={() => onViewChange('contact')} className="bg-[#000000] text-white px-8 py-4 font-luxury-sans text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2.5 hover:bg-[#D4AF37] transition-colors cursor-pointer rounded-none">
+              CONTACT SUPPORT
+            </button>
+          </div>
+          
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            {faqList.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div key={index} className={`border rounded-md overflow-hidden transition-all duration-300 ${isOpen ? 'border-[#D4AF37] shadow-[0_0_15px_rgba(201,168,76,0.15)] bg-[#F7E7CE]' : 'border-gray-200 bg-transparent'}`}>
+                  <button onClick={() => setOpenFaq(isOpen ? null : index)} className="w-full text-left py-5 px-6 flex justify-between items-center group cursor-pointer">
+                    <span className={`font-luxury-sans font-bold text-[14px] tracking-wider uppercase ${isOpen ? 'text-[#000000]' : 'text-[#000000]/90'}`}>{faq.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-[#D4AF37] transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+                        <div className="px-6 pb-5 text-[14px] text-[#000000]/80 leading-loose font-medium font-luxury-sans pt-1 flex gap-3">
+                          <CornerDownRight className="w-4 h-4 text-[#000000]/50 flex-shrink-0 mt-1.5" />
+                          <p>{faq.a}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
       </section>
 
-      {/* 7. END BANNER CTA STRIP */}
-      <section className="py-24 bg-[#111111] text-center relative overflow-hidden">
-        {/* Subtle glow assets */}
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.03] pointer-events-none"
-             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=800')` }} />
+      {/* 8. BOTTOM CTA STRIP */}
+      <section className="py-24 bg-[#000000] text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.08]" style={{ backgroundImage: `url('/2.jpeg')` }} />
         
-        <div className="max-w-4xl mx-auto px-4 relative z-10">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-[#FCF6BA] font-semibold mb-3 block">READY TO COMMENCE?</span>
-          <h2 className="font-serif text-3xl sm:text-5xl font-light tracking-tight text-white mb-4">Explore the Full Collection</h2>
-          <p className="font-serif italic text-white/50 mb-10 text-sm sm:text-base">Discover premium clothing that combines structured tailoring with everyday wearability.</p>
-          <button 
-            onClick={() => onViewChange('shop')}
-            className="px-10 py-4.5 rounded bg-gradient-to-r from-[#BF953F] via-[#C9A84C] to-[#FCF6BA] text-[#111111] text-xs font-bold tracking-widest uppercase transition-transform duration-300 hover:scale-103 active:scale-95 cursor-pointer shadow-[0_8px_30px_rgba(201,168,76,0.25)]"
-          >
-            DISCOVER THE BOUTIQUE FLOOR
-          </button>
-        </div>
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, amount: 0.5 }} 
+          variants={slowFadeUp}
+          className="relative z-10 max-w-4xl mx-auto px-6 flex flex-col items-center"
+        >
+           <span className="text-[10px] tracking-[0.4em] uppercase text-[#D4AF37] font-bold mb-3 block font-luxury-sans">UPGRADE YOUR STYLE</span>
+           <h2 className="font-luxury-serif text-3xl sm:text-5xl text-white font-bold mb-6 tracking-wide uppercase">Shop Premium Wardrobe</h2>
+           <p className="font-luxury-serif italic text-white/70 font-medium text-lg sm:text-xl max-w-lg mb-10 leading-relaxed">Discover a highly curated selection of outfits made for ultimate comfort and statement modern fits.</p>
+           <button onClick={() => onViewChange('shop')} className="px-10 py-4.5 shining-gold-btn text-[#000000] font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-none">
+              BROWSE ALL CLOTHES
+           </button>
+        </motion.div>
       </section>
 
     </div>
