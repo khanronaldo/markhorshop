@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { 
   Truck, Navigation, ShieldCheck, ChevronDown, CornerDownRight, 
-  Shirt, Layers, Diamond, Star
+  Shirt, Layers, Diamond, Star, ArrowRight
 } from 'lucide-react';
 
 interface HomeProps {
@@ -17,7 +17,6 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
   const { addToCart } = useCart();
   const { products } = useProducts();
 
-  // --- AUTO-FADE TESTIMONIALS STATE ---
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const testimonials = [
     { quote: "THE QUALITY OF THE FABRIC IS AMAZING. THE FIT IS PERFECT AND IT FEELS TRULY PREMIUM.", name: "HARIS KHAN", role: "Verified Buyer" },
@@ -27,7 +26,6 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
     { quote: "FROM FABRIC TO THE FINAL FIT, EVERYTHING IS ABSOLUTELY MAGNIFICENT. WILL SHOP AGAIN!", name: "BILAL SHEIKH", role: "Premium Member" }
   ];
 
-  // --- FAQS STATE ---
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const faqList = [
     { q: "What types of premium clothing do you offer?", a: "We specialize in premium men's apparel including signature embroidered T-shirts, high-grade twill cargo trousers, french terry hoodies, and luxury smart-casual shirts built for maximum comfort and style." },
@@ -48,82 +46,118 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
     onViewChange('product');
   };
 
-  // REUSABLE ANIMATION CONFIG FOR 2-SECOND SLOW REVEAL ON SCROLL
   const slowFadeUp = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 2, ease: [0.25, 0.8, 0.25, 1] } }
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 1.5, ease: [0.25, 0.8, 0.25, 1] } }
   };
 
   return (
     <div className="text-[#000000] overflow-hidden selection:bg-[#D4AF37] selection:text-[#000000] bg-[#FAF9F6]">
       
-      {/* EXTRACTED HTML/CSS STYLES */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
         
         .font-luxury-serif { font-family: 'Playfair Display', serif; }
         .font-luxury-sans { font-family: 'Montserrat', sans-serif; }
 
-        .liquid-gold-text {
+        .shimmer-gold-text {
           background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 10px rgba(201, 168, 76, 0.3)) drop-shadow(0 0 25px rgba(184, 151, 90, 0.5));
-          animation: liquidGold 5s linear infinite;
+          animation: goldShimmer 5s linear infinite;
         }
 
-        @keyframes liquidGold {
+        @keyframes goldShimmer {
           0% { background-position: 0% center; }
           100% { background-position: 200% center; }
         }
 
-        .shining-gold-btn {
-          background-color: #D4AF37;
-          box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        /* ── NEW SHIMMER GOLD BUTTON STYLE ── */
+        .shimmer-gold-btn {
+          background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+          background-size: 200% auto;
+          animation: goldShimmer 5s linear infinite;
+          border: 1px solid #BF953F;
           transition: all 0.4s ease-in-out;
+          box-shadow: 0 5px 15px rgba(184, 151, 90, 0.4);
         }
-        .shining-gold-btn:hover {
+
+        .shimmer-gold-btn:hover {
+          background-position: right center;
+          box-shadow: 0 10px 30px rgba(212, 175, 55, 0.6);
+          transform: translateY(-2px);
+        }
+
+        .btn-lux-primary-pill {
+          position: relative;
+          background-color: #D4AF37;
+          border: 1px solid #D4AF37;
+          color: #000000;
+          transition: all 0.4s ease-in-out;
+          box-shadow: 0 5px 15px rgba(212, 175, 55, 0.25);
+          border-radius: 999px;
+        }
+        .btn-lux-primary-pill:hover {
           background-color: #BF953F;
-          box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+          border-color: #BF953F;
+          transform: translateY(-2px);
+        }
+        
+        .btn-lux-secondary-pill {
+          position: relative;
+          background-color: transparent;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          color: #ffffff;
+          transition: all 0.4s ease-in-out;
+          border-radius: 999px;
+        }
+        .btn-lux-secondary-pill:hover {
+          background-color: #ffffff;
+          color: #000000;
+          border-color: #ffffff;
+          transform: translateY(-2px);
         }
       `}</style>
 
       {/* 1. HERO SECTION */}
-      <section className="relative h-[90vh] sm:h-screen w-full flex items-center justify-center overflow-hidden bg-[#000000]">
+      <section className="relative h-[85vh] sm:h-[90vh] w-full flex items-center justify-center overflow-hidden bg-[#000000]">
         <div 
-          className="absolute inset-0 bg-cover bg-no-repeat opacity-[0.35]" 
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-[0.4]" 
           style={{ backgroundImage: `url('/mainimage.jpeg')`, backgroundPosition: 'center 75%' }} 
         />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.2) 40%, rgba(201,168,76,0.15) 100%)' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         
         <motion.div 
           initial="hidden" 
           animate="visible" 
           variants={slowFadeUp} 
-          className="max-w-5xl mx-auto px-6 relative z-10 text-center flex flex-col items-center"
+          className="max-w-4xl mx-auto px-6 relative z-10 text-center flex flex-col items-center justify-center gap-3 -mt-20 sm:-mt-24"
         >
-          <span className="text-[11px] tracking-[0.35em] uppercase text-[#D4AF37] font-bold mb-6 block font-luxury-sans">
-            PREMIUM FASHION STORE
-          </span>
-          <h1 className="font-luxury-serif text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight uppercase">
-            <span className="liquid-gold-text block leading-normal">WELCOME TO MARKHOR COLLECTIONS</span>
+          <h1 className="flex flex-col items-center gap-4 font-luxury-serif uppercase text-center leading-none text-glow-gold w-full">
+            <span className="shimmer-gold-text text-2xl sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
+              WELCOME TO
+            </span>
+            <span className="shimmer-gold-text text-5xl sm:text-6xl md:text-7xl tracking-[0.15em] font-bold">
+              MARKHOR
+            </span>
+            <span className="shimmer-gold-text text-2xl sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
+              COLLECTIONS
+            </span>
           </h1>
-          <p className="font-luxury-serif text-lg sm:text-xl italic text-white/75 mt-4 max-w-2xl tracking-wider">
-            Premium Quality Apparel & Everyday Essentials
-          </p>
           
           <motion.div 
-            initial={{ opacity: 0, y: 30 }} 
+            initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 2, delay: 0.5, ease: "easeOut" }} 
-            className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-12 w-full sm:w-auto"
+            transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }} 
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto"
           >
-            <button onClick={() => onViewChange('shop')} className="w-full sm:w-auto px-10 py-4 shining-gold-btn text-[#000000] font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-none">
-              SHOP COLLECTION
+            <button onClick={() => onViewChange('shop')} className="btn-lux-primary-pill w-full sm:w-auto px-8 py-3.5 font-luxury-sans font-bold text-[11px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer flex items-center justify-center gap-2 group">
+              <span>Explore Collection</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button onClick={() => onViewChange('about')} className="w-full sm:w-auto px-10 py-4 border border-white/30 text-white font-luxury-sans font-medium text-xs tracking-[0.25em] uppercase hover:bg-white/10 transition-all cursor-pointer rounded-none">
-              OUR BRAND STORY
+            <button onClick={() => onViewChange('about')} className="btn-lux-secondary-pill w-full sm:w-auto px-8 py-3.5 font-luxury-sans font-medium text-[11px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer">
+              Our Heritage
             </button>
           </motion.div>
         </motion.div>
@@ -153,7 +187,6 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
             </p>
           </div>
           
-          {/* Philosophy Section Image Box with Gold Frame Layout */}
           <div className="relative aspect-square">
             <img 
               src="/5logo.jpeg" 
@@ -185,8 +218,8 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
               <motion.div 
                 key={index}
                 variants={{
-                  hidden: { opacity: 0, y: 50 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: index * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                  hidden: { opacity: 0, y: 30 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: index * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
                 className="bg-[#F7E7CE] px-10 py-14 rounded-xl border border-[#C9A84C]/20 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center relative"
               >
@@ -212,7 +245,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
               <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">FEATURED RELEASES</span>
               <h2 className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold tracking-wide">Trending In Store</h2>
             </div>
-            <button onClick={() => onViewChange('shop')} className="px-6 py-3 border-2 border-[#000000] text-[#000000] text-[10px] font-luxury-sans font-bold tracking-[0.2em] uppercase hover:bg-[#000000] hover:text-white transition-all cursor-pointer rounded-none">
+            <button onClick={() => onViewChange('shop')} className="px-6 py-3 border border-[#000000] text-[#000000] text-[10px] font-luxury-sans font-bold tracking-[0.2em] uppercase hover:bg-[#000000] hover:text-white transition-all cursor-pointer rounded-full bg-transparent">
               VIEW ALL PRODUCTS
             </button>
           </motion.div>
@@ -222,8 +255,8 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
               <motion.div 
                 key={p.id} 
                 variants={{
-                  hidden: { opacity: 0, y: 50 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: index * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                  hidden: { opacity: 0, y: 30 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: index * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
                 className="group cursor-pointer flex flex-col" 
                 onClick={() => handleProductClick(p)}
@@ -238,7 +271,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
                 <p className="font-luxury-sans text-[#000000]/80 font-semibold text-sm mb-4">RS. {p.price.toLocaleString()}</p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); addToCart(p, p.sizes?.[0] || 'M', p.colors?.[0] || 'Black'); }} 
-                  className="w-full py-3.5 border border-[#000000]/20 hover:border-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] uppercase bg-transparent text-[#000000] hover:bg-[#000000] hover:text-white transition-all mt-auto rounded-none"
+                  className="w-full py-3.5 border border-[#000000]/20 hover:border-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] uppercase bg-transparent text-[#000000] hover:bg-[#000000] hover:text-white transition-all mt-auto rounded-full bg-transparent"
                 >
                   ADD TO CART
                 </button>
@@ -270,8 +303,8 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
               <motion.div 
                 key={i}
                 variants={{
-                  hidden: { opacity: 0, y: 50 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 2, delay: i * 0.3, ease: [0.25, 0.8, 0.25, 1] } }
+                  hidden: { opacity: 0, y: 30 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: i * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
                 className="bg-white/5 border border-white/10 p-10 rounded-xl flex flex-col items-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 hover:-translate-y-1 transition-all duration-300 backdrop-blur-md group"
               >
@@ -353,7 +386,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
             <h2 className="font-luxury-serif text-4xl text-[#000000] font-bold leading-tight mb-6">Got Any<br />Questions?</h2>
             <div className="w-12 h-[2px] bg-[#000000] mb-6" />
             <p className="font-luxury-sans text-[#000000]/70 font-medium text-[14px] leading-loose max-w-xs mb-8">Can't find what you are looking for? Contact our customer support team directly for fast assistance with your order.</p>
-            <button onClick={() => onViewChange('contact')} className="bg-[#000000] text-white px-8 py-4 font-luxury-sans text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2.5 hover:bg-[#D4AF37] transition-colors cursor-pointer rounded-none">
+            <button onClick={() => onViewChange('contact')} className="bg-[#000000] text-white px-8 py-4 font-luxury-sans text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2.5 hover:bg-[#D4AF37] transition-colors cursor-pointer rounded-full bg-transparent">
               CONTACT SUPPORT
             </button>
           </div>
@@ -398,7 +431,9 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
            <span className="text-[10px] tracking-[0.4em] uppercase text-[#D4AF37] font-bold mb-3 block font-luxury-sans">UPGRADE YOUR STYLE</span>
            <h2 className="font-luxury-serif text-3xl sm:text-5xl text-white font-bold mb-6 tracking-wide uppercase">Shop Premium Wardrobe</h2>
            <p className="font-luxury-serif italic text-white/70 font-medium text-lg sm:text-xl max-w-lg mb-10 leading-relaxed">Discover a highly curated selection of outfits made for ultimate comfort and statement modern fits.</p>
-           <button onClick={() => onViewChange('shop')} className="px-10 py-4.5 shining-gold-btn text-[#000000] font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-none">
+           
+           {/* CTA button with golden shimmer animation */}
+           <button onClick={() => onViewChange('shop')} className="px-10 py-4.5 font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-full shimmer-gold-btn text-[#000000]">
               BROWSE ALL CLOTHES
            </button>
         </motion.div>
