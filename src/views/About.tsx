@@ -104,7 +104,7 @@ export const About: React.FC<AboutProps> = ({ onViewChange }) => {
       <section className="relative h-[55vh] min-h-[400px] flex items-center justify-center bg-[#111111]">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none filter contrast-125 brightness-75"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=1600')` }}
+          style={{ backgroundImage: `url('/mainimage.jpeg')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black/30" />
         
