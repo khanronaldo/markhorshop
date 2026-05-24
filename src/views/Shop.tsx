@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { 
   SlidersHorizontal, ArrowUpDown, ShoppingCart, HelpCircle, 
-  Heart, Eye, X, ShieldAlert, Truck 
+  Heart, Eye, X, ShieldAlert, Truck, Filter 
 } from 'lucide-react';
 
 const COLOR_MAP: Record<string, string> = {
@@ -38,6 +38,7 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
   const [maxPriceLimit, setMaxPriceLimit] = useState<number>(12000);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>(() => {
     const saved = localStorage.getItem("markhor_wishlist");
     return saved ? JSON.parse(saved) : [];
@@ -86,6 +87,7 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
     setSelectedColors([]);
     setMaxPrice(maxPriceLimit);
     setSortBy('featured');
+    setIsMobileFilterOpen(false);
   };
 
   const toggleWishlist = (productId: string, e: React.MouseEvent) => {
@@ -97,56 +99,133 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
     localStorage.setItem("markhor_wishlist", JSON.stringify(updated));
   };
 
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isMobileFilterOpen]);
+
   return (
-    <div className="bg-[#FAF6F0] text-[#332C2A] min-h-screen pb-20 selection:bg-[#FAD5A5]/40 selection:text-[#332C2A]">
+    <div className="bg-[#F7E7CE] text-[#1C1A17] min-h-screen pb-20 selection:bg-[#BF953F]/30 selection:text-[#1C1A17]">
       
-      {/* HIGH-END EDITORIAL BANNER HEADER (Exactly as requested) */}
+      {/* HIGH-END EDITORIAL BANNER HEADER */}
       <div 
-        className="relative py-28 bg-cover bg-center border-b border-[#E5DCD3] overflow-hidden"
-        style={{ 
-          backgroundImage: `url('/3.jpeg')` 
-        }}
+        className="relative py-20 sm:py-28 bg-cover bg-center border-b border-[#E3DDD3] overflow-hidden"
+        style={{ backgroundImage: `url('/3.jpeg')` }}
       >
-        {/* Soft dark vignette overlay for high contrast and luxury depth */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAF6F0] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#F7E7CE] to-transparent" />
         
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 flex flex-col justify-center items-start text-left">
-          <span className="text-[10px] text-[#FAD5A5] tracking-[0.45em] font-bold uppercase mb-3 block drop-shadow-sm">
+          <span className="text-[10px] text-[#BF953F] tracking-[0.45em] font-bold uppercase mb-3 block drop-shadow-sm">
             MARKHOR ATELIER
           </span>
-          <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-4 drop-shadow-md uppercase leading-none">
+          <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-4 drop-shadow-md uppercase leading-none">
             Markhor Collections
           </h1>
-          <div className="w-20 h-[2px] bg-[#FAD5A5] mb-4" />
-          <p className="font-sans text-neutral-200 text-base sm:text-lg max-w-xl font-light tracking-wide leading-relaxed drop-shadow-sm">
+          <div className="w-16 sm:w-20 h-[2px] bg-[#BF953F] mb-4" />
+          <p className="font-sans text-neutral-200 text-sm sm:text-lg max-w-xl font-light tracking-wide leading-relaxed drop-shadow-sm">
             Suite for the Modern Journey — where style meets substance.
           </p>
         </div>
       </div>
 
       {/* PORTAL GRID LAYOUT */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-14">
+        
+        {/* MOBILE NAVIGATION & FILTER TRIGGER */}
+        <div className="lg:hidden flex flex-col gap-4 mb-6">
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+            {(['all', 'men', 'women', 'kids'] as const).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer whitespace-nowrap flex-shrink-0 border ${
+                  activeCategory === cat
+                    ? 'bg-[#1C1A17] text-[#BF953F] border-[#1C1A17] shadow-md'
+                    : 'bg-[#FFFFFF] text-[#59534E] border-[#E3DDD3] hover:border-[#BF953F]'
+                }`}
+              >
+                {cat === 'all' ? 'All' : `${cat}'s`}
+              </button>
+            ))}
+          </div>
           
+          <div className="flex justify-between items-center gap-2 sm:gap-3">
+            <button 
+              onClick={() => setIsMobileFilterOpen(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 bg-[#FFFFFF] border border-[#E3DDD3] rounded-full py-2.5 sm:py-3 px-4 sm:px-6 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#1C1A17] hover:bg-[#BF953F] hover:text-white transition-all shadow-sm group"
+            >
+              <Filter className="w-3.5 h-3.5 text-[#B58A3D] group-hover:text-white" />
+              REFINE
+            </button>
+            
+            <div className="relative flex-1">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full appearance-none bg-[#FFFFFF] text-[#1C1A17] text-[9px] sm:text-[10px] font-bold tracking-widest border border-[#E3DDD3] rounded-full py-2.5 sm:py-3 px-4 sm:px-6 outline-none cursor-pointer focus:border-[#BF953F] transition-all shadow-sm"
+              >
+                <option value="featured">FEATURED</option>
+                <option value="price-asc">LOW-HIGH</option>
+                <option value="price-desc">HIGH-LOW</option>
+                <option value="name">A-Z</option>
+              </select>
+              <ArrowUpDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B58A3D] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 items-start">
+          
+          {/* MOBILE BACKDROP */}
+          <AnimatePresence>
+            {isMobileFilterOpen && (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              />
+            )}
+          </AnimatePresence>
+
           {/* SIDEBAR FILTERS */}
-          <aside className="lg:col-span-3 bg-[#FFFFFF] border border-[#E5DCD3] rounded-2xl p-6 lg:sticky lg:top-24 shadow-[0_8px_30px_rgba(51,44,42,0.04)] text-left">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E5DCD3] mb-6">
-              <h3 className="text-[11px] font-bold tracking-[0.25em] uppercase flex items-center gap-2 text-[#332C2A]">
-                <SlidersHorizontal className="w-4 h-4 text-[#C48F56]" /> FILTERS
+          <aside className={`
+            bg-[#FFFFFF] text-left transition-transform duration-300 ease-in-out z-50
+            ${isMobileFilterOpen 
+              ? 'fixed inset-x-0 bottom-0 rounded-t-[2.5rem] p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] max-h-[85vh] overflow-y-auto transform translate-y-0' 
+              : 'hidden lg:block lg:sticky lg:top-24 border border-[#E3DDD3] rounded-2xl p-6 shadow-[0_8px_30px_rgba(28,26,23,0.04)] lg:col-span-3'}
+          `}>
+            {isMobileFilterOpen && (
+              <div className="flex flex-col items-center mb-6 lg:hidden">
+                <div className="w-12 h-1.5 bg-[#E3DDD3] rounded-full mb-4" />
+                <div className="w-full flex items-center justify-between">
+                  <h3 className="text-xs font-bold tracking-[0.25em] uppercase text-[#1C1A17]">Refine Selection</h3>
+                  <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 bg-[#F5F5F5] rounded-full text-[#1C1A17] hover:bg-[#BF953F] hover:text-white transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="hidden lg:flex items-center justify-between pb-4 border-b border-[#E3DDD3] mb-6">
+              <h3 className="text-[11px] font-bold tracking-[0.25em] uppercase flex items-center gap-2 text-[#1C1A17]">
+                <SlidersHorizontal className="w-4 h-4 text-[#B58A3D]" /> FILTERS
               </h3>
               <button 
                 onClick={clearAllFilters}
-                className="text-[10px] font-bold tracking-[0.2em] text-[#C48F56] hover:text-[#332C2A] uppercase transition-colors cursor-pointer bg-transparent border-0"
+                className="text-[10px] font-bold tracking-[0.2em] text-[#B58A3D] hover:text-[#1C1A17] uppercase transition-colors cursor-pointer bg-transparent border-0"
               >
-                RESET
+                CLEAR ALL
               </button>
             </div>
 
-            {/* Sizes */}
-            <div className="mb-6 pb-6 border-b border-[#E5DCD3]">
-              <span className="text-[9px] tracking-[0.2em] font-bold uppercase text-[#5C504C]/60 block mb-4">
-                SIZE & VOLUME
+            <div className="mb-6 pb-6 border-b border-[#E3DDD3]">
+              <span className="text-[9px] tracking-[0.2em] font-bold uppercase text-[#59534E] block mb-4">
+                DIMENSIONS & FIT
               </span>
               <div className="flex flex-wrap gap-2">
                 {['S', 'M', 'L', 'XL', '50ml', '100ml', '41', '42', '43'].map((size) => {
@@ -157,8 +236,8 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
                       onClick={() => toggleSize(size)}
                       className={`py-2 px-3 text-[10px] font-mono font-bold border rounded-lg transition-all cursor-pointer ${
                         isChecked 
-                          ? 'bg-gradient-to-r from-[#FAD5A5] to-[#fdfaf2] text-[#332C2A] border-transparent shadow-sm scale-98' 
-                          : 'border-[#E5DCD3] hover:border-[#FAD5A5] text-[#5C504C] bg-[#FAF6F0]'
+                          ? 'bg-[#1C1A17] text-[#BF953F] border-[#1C1A17] shadow-sm' 
+                          : 'border-[#E3DDD3] hover:border-[#BF953F] text-[#59534E] bg-[#F5F5F5]'
                       }`}
                     >
                       {size}
@@ -168,10 +247,9 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
               </div>
             </div>
 
-            {/* Color Grid */}
-            <div className="mb-6 pb-6 border-b border-[#E5DCD3]">
-              <span className="text-[9px] tracking-[0.2em] font-bold uppercase text-[#5C504C]/60 block mb-4">
-                COLOR PALETTE
+            <div className="mb-6 pb-6 border-b border-[#E3DDD3]">
+              <span className="text-[9px] tracking-[0.2em] font-bold uppercase text-[#59534E] block mb-4">
+                CURATED SHADES
               </span>
               <div className="flex flex-wrap gap-2">
                 {['black', 'white', 'blue', 'dark blue', 'gray', 'cream', 'maroon', 'olive', 'beige', 'navy', 'peach'].map((col) => {
@@ -182,8 +260,8 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
                       onClick={() => toggleColor(col)}
                       className={`flex items-center gap-2 text-[9px] font-bold uppercase px-3 py-2 border rounded-xl transition-all cursor-pointer ${
                         isChecked 
-                          ? 'bg-[#FAD5A5] text-[#332C2A] border-transparent font-extrabold shadow-sm' 
-                          : 'border-[#E5DCD3] hover:border-[#FAD5A5] text-[#5C504C] bg-[#FAF6F0]'
+                          ? 'bg-[#F5F5F5] text-[#1C1A17] border-[#BF953F] font-extrabold shadow-sm ring-1 ring-[#BF953F]' 
+                          : 'border-[#E3DDD3] hover:border-[#BF953F] text-[#59534E] bg-[#FFFFFF]'
                       }`}
                     >
                       <span 
@@ -197,11 +275,10 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
               </div>
             </div>
 
-            {/* Range Slider */}
             <div className="mb-2">
-              <div className="flex justify-between text-[9px] tracking-[0.2em] font-bold text-[#5C504C]/60 uppercase mb-3">
-                <span>MAX LIMIT</span>
-                <span className="text-[#C48F56] font-mono">Rs. {maxPrice.toLocaleString()}</span>
+              <div className="flex justify-between text-[9px] tracking-[0.2em] font-bold text-[#59534E] uppercase mb-3">
+                <span>PRICE THRESHOLD</span>
+                <span className="text-[#B58A3D] font-mono">Rs. {maxPrice.toLocaleString()}</span>
               </div>
               <input 
                 type="range" 
@@ -210,47 +287,55 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
                 step={100} 
                 value={maxPrice} 
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#C48F56] cursor-pointer bg-[#332C2A]/10 h-1 rounded-full outline-none"
+                className="w-full accent-[#1C1A17] cursor-pointer bg-[#E3DDD3] h-1.5 rounded-full outline-none"
               />
-              <div className="flex justify-between text-[9px] font-mono text-[#5C504C]/40 mt-2">
+              <div className="flex justify-between text-[9px] font-mono text-[#59534E]/70 mt-3">
                 <span>Rs. 1,000</span>
                 <span>Rs. {maxPriceLimit.toLocaleString()}</span>
               </div>
             </div>
+
+            {isMobileFilterOpen && (
+              <button 
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="w-full mt-6 py-4 bg-[#1C1A17] text-[#BF953F] text-[10px] font-bold tracking-[0.25em] uppercase rounded-xl hover:bg-black transition-colors"
+              >
+                Apply Adjustments ({filteredProducts.length})
+              </button>
+            )}
           </aside>
 
-          {/* MAIN COLUMN OVERVIEW */}
+          {/* MAIN COLUMN */}
           <main className="lg:col-span-9 flex flex-col gap-6">
             
-            {/* Top Navigation Bar Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#FFFFFF] border border-[#E5DCD3] p-4 rounded-xl shadow-[0_4px_20px_rgba(51,44,42,0.02)]">
-              <div className="flex flex-wrap gap-1.5">
+            <div className="hidden lg:flex flex-row justify-between items-center gap-4 bg-[#FFFFFF] border border-[#E3DDD3] p-4 rounded-xl shadow-[0_4px_20px_rgba(28,26,23,0.02)]">
+              <div className="flex gap-1.5">
                 {(['all', 'men', 'women', 'kids'] as const).map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
                     className={`px-5 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer border-0 ${
                       activeCategory === cat
-                        ? 'bg-gradient-to-r from-[#FAD5A5] to-[#fdfaf2] text-[#332C2A] font-extrabold shadow-sm'
-                        : 'text-[#5C504C]/60 hover:text-[#332C2A] hover:bg-[#FAF6F0] bg-transparent'
+                        ? 'bg-[#1C1A17] text-[#BF953F] shadow-sm'
+                        : 'text-[#59534E] hover:text-[#1C1A17] hover:bg-[#F5F5F5] bg-transparent'
                     }`}
                   >
-                    {cat === 'all' ? 'All Departments' : `${cat}'s Segment`}
+                    {cat === 'all' ? 'The Atelier' : `${cat}'s Segment`}
                   </button>
                 ))}
               </div>
 
-              <div className="flex items-center gap-2.5 w-full md:w-auto">
-                <ArrowUpDown className="w-4 h-4 text-[#C48F56]" />
+              <div className="flex items-center gap-2.5">
+                <ArrowUpDown className="w-4 h-4 text-[#B58A3D]" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-[#FAF6F0] text-[#332C2A]/80 text-[11px] font-bold tracking-widest border border-[#E5DCD3] rounded-lg py-2.5 px-4 outline-none cursor-pointer focus:border-[#FAD5A5] transition-all"
+                  className="bg-[#F5F5F5] text-[#1C1A17] text-[10px] font-bold tracking-widest border border-[#E3DDD3] rounded-lg py-2.5 px-4 outline-none cursor-pointer focus:border-[#BF953F] transition-all"
                 >
-                  <option value="featured">Default Ordering Matrix</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="name">Alphanumeric: A-Z</option>
+                  <option value="featured">DEFAULT CURATION</option>
+                  <option value="price-asc">PRICE: LOW TO HIGH</option>
+                  <option value="price-desc">PRICE: HIGH TO LOW</option>
+                  <option value="name">ALPHABETIC: A-Z</option>
                 </select>
               </div>
             </div>
@@ -260,21 +345,19 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
             {/* CARDS CONTAINER */}
             <AnimatePresence mode="wait">
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {[1, 2, 3].map((num) => (
-                    <div key={num} className="bg-[#FFFFFF] border border-[#E5DCD3] rounded-xl p-4 flex flex-col gap-4 animate-pulse">
-                      <div className="aspect-[3/4] bg-[#FAF6F0] rounded-lg w-full" />
-                      <div className="h-3 bg-[#FAF6F0] rounded w-1/3" />
-                      <div className="h-5 bg-[#FAF6F0] rounded w-3/4" />
+                <div className="grid grid-cols-3 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-8">
+                  {[1, 2, 3, 4, 5, 6].map((num) => (
+                    <div key={num} className="bg-[#FFFFFF] border border-[#E3DDD3] rounded-md sm:rounded-xl p-2 sm:p-4 flex flex-col gap-2 sm:gap-4 animate-pulse">
+                      <div className="aspect-[3/4] bg-[#F5F5F5] rounded-md sm:rounded-lg w-full" />
+                      <div className="h-2 sm:h-3 bg-[#F5F5F5] rounded w-1/3" />
+                      <div className="h-3 sm:h-5 bg-[#F5F5F5] rounded w-3/4" />
                     </div>
                   ))}
                 </div>
               ) : filteredProducts.length > 0 ? (
                 <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="grid grid-cols-3 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-8"
                 >
                   {filteredProducts.map((p) => (
                     <ProductCard 
@@ -290,14 +373,14 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
                   ))}
                 </motion.div>
               ) : (
-                <div className="border border-[#E5DCD3] bg-[#FFFFFF] text-center py-24 rounded-2xl flex flex-col items-center justify-center gap-4">
-                  <HelpCircle className="w-12 h-12 text-[#C48F56]/40" />
-                  <h3 className="font-serif text-xl text-[#332C2A]">No Matches Located</h3>
+                <div className="border border-[#E3DDD3] bg-[#FFFFFF] text-center py-24 rounded-2xl flex flex-col items-center justify-center gap-4">
+                  <HelpCircle className="w-12 h-12 text-[#B58A3D]/40" />
+                  <h3 className="font-serif text-xl text-[#1C1A17]">No Selections Found</h3>
                   <button 
                     onClick={clearAllFilters}
-                    className="px-6 py-3 border border-[#FAD5A5] text-[10px] text-[#C48F56] hover:text-[#332C2A] hover:bg-[#FAD5A5] uppercase font-bold tracking-widest rounded-xl transition-all mt-2"
+                    className="px-6 py-3 bg-[#1C1A17] text-[#BF953F] hover:bg-black text-[10px] uppercase font-bold tracking-widest rounded-xl transition-all mt-2 cursor-pointer"
                   >
-                    RESET SYSTEM FILTERS
+                    RESET ALL FILTERS
                   </button>
                 </div>
               )}
@@ -309,52 +392,48 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
       {/* QUICK VIEW OVERLAY MODAL */}
       <AnimatePresence>
         {quickViewProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setQuickViewProduct(null)}
-              className="absolute inset-0 bg-[#332C2A]/30 backdrop-blur-md"
+              className="absolute inset-0 bg-[#1C1A17]/60 backdrop-blur-md"
             />
 
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative max-w-3xl w-full bg-[#FFFFFF] border border-[#FAD5A5] rounded-2xl p-6 sm:p-8 shadow-xl overflow-y-auto max-h-[90vh] grid grid-cols-1 md:grid-cols-12 gap-8 text-left"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="relative max-w-3xl w-full bg-[#FFFFFF] border border-[#E3DDD3] rounded-2xl p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh] grid grid-cols-1 md:grid-cols-12 gap-8 text-left"
             >
               <button 
                 onClick={() => setQuickViewProduct(null)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full border border-[#E5DCD3] bg-[#FAF6F0] text-[#332C2A]/70 flex items-center justify-center hover:text-[#C48F56] transition-all cursor-pointer"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full border border-[#E3DDD3] bg-[#F5F5F5] text-[#1C1A17]/70 flex items-center justify-center hover:bg-[#1C1A17] hover:text-[#BF953F] transition-all cursor-pointer z-10"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="md:col-span-5">
-                <div className="aspect-[3/4] rounded-xl overflow-hidden bg-[#FAF6F0] border border-[#E5DCD3]">
+                <div className="aspect-[3/4] rounded-xl overflow-hidden bg-[#F5F5F5] border border-[#E3DDD3]">
                   <img src={quickViewProduct.image} alt={quickViewProduct.name} className="w-full h-full object-cover object-top" />
                 </div>
               </div>
 
               <div className="md:col-span-7 flex flex-col justify-center">
-                <span className="text-[9px] font-bold tracking-[0.3em] text-[#C48F56] uppercase block mb-2">
+                <span className="text-[9px] font-bold tracking-[0.3em] text-[#B58A3D] uppercase block mb-2">
                   {quickViewProduct.subcategory || 'Premium'} Collection Line
                 </span>
-                <h3 className="font-serif text-2xl sm:text-3xl text-[#332C2A] font-light mb-2">
+                <h3 className="font-serif text-2xl sm:text-3xl text-[#1C1A17] font-light mb-2">
                   {quickViewProduct.name}
                 </h3>
-                <span className="text-xl font-mono font-bold text-[#C48F56] pb-4 border-b border-[#E5DCD3] block">
+                <span className="text-xl font-mono font-bold text-[#BF953F] pb-4 border-b border-[#E3DDD3] block">
                   Rs. {quickViewProduct.price.toLocaleString()}
                 </span>
                 
-                <p className="text-xs text-[#5C504C] leading-relaxed font-light py-5">
+                <p className="text-xs text-[#59534E] leading-relaxed font-light py-5">
                   {quickViewProduct.description}
                 </p>
                 
-                <div className="flex flex-col gap-3.5 mb-6 text-xs text-[#5C504C]/70">
-                  <div className="flex items-center gap-2"><Truck className="w-4.5 h-4.5 text-[#C48F56]" /> <span>Complimentary Secure Courier Delivery</span></div>
-                  <div className="flex items-center gap-2"><ShieldAlert className="w-4.5 h-4.5 text-[#C48F56]" /> <span>Verified Authentic Markhor Luxury Asset</span></div>
+                <div className="flex flex-col gap-3.5 mb-6 text-xs text-[#59534E]">
+                  <div className="flex items-center gap-2"><Truck className="w-4.5 h-4.5 text-[#B58A3D]" /> <span>Complimentary Secure Courier Delivery</span></div>
+                  <div className="flex items-center gap-2"><ShieldAlert className="w-4.5 h-4.5 text-[#B58A3D]" /> <span>Verified Authentic Markhor Luxury Asset</span></div>
                 </div>
 
                 <div className="flex gap-3 mt-auto">
@@ -364,16 +443,16 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
                       onViewChange('product');
                       setQuickViewProduct(null);
                     }}
-                    className="flex-1 py-3.5 bg-gradient-to-r from-[#FAD5A5] to-[#F5E6D3] text-[#332C2A] font-bold tracking-widest text-[10px] uppercase rounded-xl transition-all text-center"
+                    className="flex-1 py-3.5 bg-[#1C1A17] text-[#BF953F] hover:bg-black font-bold tracking-widest text-[10px] uppercase rounded-xl transition-all text-center cursor-pointer"
                   >
-                    VIEW PRODUCT SPECIFICS
+                    VIEW SPECIFICS
                   </button>
                   <button
                     onClick={() => {
                       addToCart(quickViewProduct, quickViewProduct.sizes[0] || 'M', quickViewProduct.colors[0] || 'cream');
                       setQuickViewProduct(null);
                     }}
-                    className="py-3.5 px-6 border border-[#E5DCD3] bg-[#FAF6F0] text-[#C48F56] hover:bg-[#FAD5A5] hover:text-[#332C2A] rounded-xl flex items-center justify-center transition-all duration-300"
+                    className="py-3.5 px-6 border border-[#E3DDD3] bg-[#F5F5F5] text-[#B58A3D] hover:bg-[#BF953F] hover:text-white hover:border-[#BF953F] rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer"
                   >
                     <ShoppingCart className="w-4.5 h-4.5" />
                   </button>
@@ -425,101 +504,77 @@ const ProductCard: React.FC<CardProps> = ({
     onViewChange('product');
   };
 
-  const handleColorSwatch = (variant: ColorVariant, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActiveColor(variant.colorName);
-    setActiveImage(variant.imgUrl);
-  };
-
   const isFavorited = wishlist.includes(product.id);
 
   return (
     <div 
       onClick={handleSelect}
-      className="bg-[#FFFFFF] border border-[#E5DCD3] rounded-xl overflow-hidden shadow-sm hover:border-[#FAD5A5] hover:shadow-[0_10px_30px_rgba(51,44,42,0.05)] transition-all duration-500 cursor-pointer flex flex-col h-full group relative text-left"
+      className="bg-[#FFFFFF] border border-[#E3DDD3] rounded-md sm:rounded-xl overflow-hidden shadow-sm hover:border-[#BF953F] hover:shadow-[0_10px_30px_rgba(28,26,23,0.08)] transition-all duration-500 cursor-pointer flex flex-col h-full group relative text-left"
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#FAF6F0]">
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#F5F5F5]">
         <img 
           src={activeImage} 
           alt={product.name} 
-          className={`w-full h-full object-cover transform scale-100 group-hover:scale-102 transition-all duration-700 object-top absolute inset-0 ${secondImage ? 'group-hover:opacity-0' : ''}`}
+          className={`w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-all duration-700 object-top absolute inset-0 ${secondImage ? 'group-hover:opacity-0' : ''}`}
         />
 
         {secondImage && (
           <img 
             src={secondImage} 
             alt={`${product.name} alternate`} 
-            className="w-full h-full object-cover transform scale-101 group-hover:scale-102 transition-all duration-700 object-top absolute inset-0 opacity-0 group-hover:opacity-100"
+            className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-all duration-700 object-top absolute inset-0 opacity-0 group-hover:opacity-100"
           />
         )}
 
         {/* Wishlist Button */}
         <button 
           onClick={(e) => onToggleWishlist(product.id, e)}
-          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[#FFFFFF]/80 backdrop-blur-md border border-[#E5DCD3] flex items-center justify-center hover:bg-[#FAD5A5] hover:text-[#332C2A] transition-all duration-300"
+          className="absolute top-1.5 right-1.5 sm:top-4 sm:right-4 z-10 w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-[#FFFFFF]/80 backdrop-blur-md border border-[#E3DDD3] flex items-center justify-center hover:bg-[#BF953F] hover:text-white transition-all duration-300 shadow-sm"
         >
-          <Heart className={`w-4 h-4 transition-all ${isFavorited ? 'fill-red-500 text-red-500 scale-110' : 'text-[#5C504C]/60'}`} />
+          <Heart className={`w-3 h-3 sm:w-4 sm:h-4 transition-all ${isFavorited ? 'fill-red-500 text-red-500 scale-110' : 'text-[#59534E]'}`} />
         </button>
 
         {/* Badge */}
         {product.badge && (
-          <span className="absolute top-4 left-4 bg-[#FFFFFF] border border-[#FAD5A5] text-[#332C2A] text-[9px] font-mono font-bold tracking-[0.2em] py-1.5 px-3 uppercase rounded z-10 shadow-sm">
+          <span className="absolute top-1.5 left-1.5 sm:top-4 sm:left-4 bg-[#1C1A17] text-[#BF953F] text-[6px] sm:text-[8px] font-mono font-bold tracking-[0.2em] py-0.5 px-1.5 sm:py-1.5 sm:px-3 uppercase rounded z-10 shadow-sm">
             {product.badge}
           </span>
         )}
 
-        <div className="absolute inset-0 bg-[#332C2A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end p-5">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1C1A17]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex flex-col items-center justify-end p-5">
           <button 
             onClick={(e) => { e.stopPropagation(); onQuickView(product); }}
-            className="w-full py-3 text-center bg-[#FFFFFF] text-[#332C2A] border border-[#E5DCD3] hover:bg-gradient-to-r hover:from-[#FAD5A5] hover:to-[#fdfaf2] text-[9px] font-bold tracking-widest uppercase rounded shadow-md transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+            className="w-full py-3 text-center bg-[#FFFFFF] text-[#1C1A17] border border-transparent hover:bg-[#BF953F] hover:text-white text-[9px] font-bold tracking-widest uppercase rounded shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
           >
-            <Eye className="w-3.5 h-3.5 inline-block mr-1.5 text-[#C48F56]" /> QUICK INSPECT
+            <Eye className="w-3.5 h-3.5 inline-block mr-1.5" /> QUICK INSPECT
           </button>
         </div>
       </div>
 
-      <div className="p-5 flex flex-col flex-1 text-left relative">
+      {/* Info Section */}
+      <div className="p-2 sm:p-5 flex flex-col flex-1 text-left relative mt-1 sm:mt-0">
         
-        {/* Dynamic Swatches Mapping */}
-        {product.colorImagesList && product.colorImagesList.length > 0 && (
-          <div className="flex gap-1.5 mb-3.5 items-center">
-            {product.colorImagesList.map((colVariant) => {
-              const isActive = activeColor.toLowerCase() === colVariant.colorName.toLowerCase();
-              return (
-                <button
-                  key={colVariant.colorName}
-                  onClick={(e) => handleColorSwatch(colVariant, e)}
-                  title={colVariant.colorName}
-                  className={`w-3.5 h-3.5 rounded-full border transition-all duration-300 cursor-pointer flex-shrink-0 flex items-center justify-center ${
-                    isActive ? 'border-[#C48F56] scale-110 ring-2 ring-[#FAD5A5]/60' : 'border-[#E5DCD3]'
-                  }`}
-                  style={{ backgroundColor: colVariant.hex }}
-                >
-                  {isActive && <span className="w-1 h-1 bg-[#332C2A] rounded-full" />}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        <span className="text-[9px] text-[#5C504C]/60 font-bold tracking-[0.2em] uppercase mb-1.5 block">
+        <span className="text-[6px] sm:text-[9px] text-[#59534E] font-bold tracking-[0.2em] uppercase mb-0.5 sm:mb-1.5 block line-clamp-1">
           {product.category} / {product.subcategory || 'Atelier'}
         </span>
-        <h3 className="font-serif text-base font-normal tracking-wide text-[#332C2A] group-hover:text-[#C48F56] transition-colors mb-2 leading-snug">
+        <h3 className="font-serif text-[10px] sm:text-base font-normal tracking-wide text-[#1C1A17] group-hover:text-[#B58A3D] transition-colors mb-1 sm:mb-2 leading-tight sm:leading-snug line-clamp-1">
           {product.name}
         </h3>
-        <div className="text-sm font-mono font-bold text-[#C48F56] mb-5">
+        <div className="text-[8px] sm:text-sm font-mono font-bold text-[#BF953F] mb-2 sm:mb-5">
           Rs. {product.price.toLocaleString()}
         </div>
 
+        {/* Add to Cart Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             addToCart(product, product.sizes[0] || 'M', activeColor);
           }}
-          className="w-full mt-auto py-3 rounded-xl bg-[#FAF6F0] border border-[#E5DCD3] text-[9px] font-bold tracking-[0.25em] text-[#332C2A] hover:bg-[#FAD5A5] hover:border-transparent transition-all duration-300 uppercase cursor-pointer flex items-center justify-center gap-2"
+          className="w-full mt-auto py-1.5 sm:py-3.5 rounded-md sm:rounded-xl bg-[#F5F5F5] border border-[#E3DDD3] text-[7px] sm:text-[9px] font-bold tracking-[0.1em] sm:tracking-[0.25em] text-[#1C1A17] hover:bg-[#1C1A17] hover:text-[#BF953F] hover:border-transparent transition-all duration-300 uppercase cursor-pointer flex items-center justify-center gap-1 sm:gap-2 group/btn"
         >
-          <ShoppingCart className="w-3.5 h-3.5 text-[#C48F56]" /> ADD TO SECURE BAG
+          <ShoppingCart className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-[#B58A3D] group-hover/btn:text-[#BF953F]" /> 
+          <span className="hidden sm:inline">ADD TO SECURE BAG</span>
+          <span className="sm:hidden">ADD</span>
         </button>
 
       </div>

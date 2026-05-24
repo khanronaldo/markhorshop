@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product, ViewType } from '../types';
 import { useCart } from '../context/CartContext';
@@ -73,7 +73,6 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           100% { background-position: 200% center; }
         }
 
-        /* ── NEW SHIMMER GOLD BUTTON STYLE ── */
         .shimmer-gold-btn {
           background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
           background-size: 200% auto;
@@ -118,10 +117,39 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           border-color: #ffffff;
           transform: translateY(-2px);
         }
+
+        /* Mobile horizontal scroll for products */
+        .products-scroll {
+          display: flex;
+          gap: 14px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 8px;
+          scrollbar-width: none;
+        }
+        .products-scroll::-webkit-scrollbar { display: none; }
+        .products-scroll .product-card {
+          flex: 0 0 62vw;
+          max-width: 240px;
+          scroll-snap-align: start;
+        }
+
+        @media (min-width: 640px) {
+          .products-scroll {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            overflow-x: visible;
+          }
+          .products-scroll .product-card {
+            flex: unset;
+            max-width: unset;
+          }
+        }
       `}</style>
 
       {/* 1. HERO SECTION */}
-      <section className="relative h-[85vh] sm:h-[90vh] w-full flex items-center justify-center overflow-hidden bg-[#000000]">
+      <section className="relative h-[78vh] sm:h-[90vh] w-full flex items-center justify-center overflow-hidden bg-[#000000]">
         <div 
           className="absolute inset-0 bg-cover bg-no-repeat opacity-[0.4]" 
           style={{ backgroundImage: `url('/mainimage.jpeg')`, backgroundPosition: 'center 75%' }} 
@@ -132,16 +160,16 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           initial="hidden" 
           animate="visible" 
           variants={slowFadeUp} 
-          className="max-w-4xl mx-auto px-6 relative z-10 text-center flex flex-col items-center justify-center gap-3 -mt-20 sm:-mt-24"
+          className="max-w-4xl mx-auto px-6 relative z-10 text-center flex flex-col items-center justify-center gap-3 -mt-12 sm:-mt-24"
         >
-          <h1 className="flex flex-col items-center gap-4 font-luxury-serif uppercase text-center leading-none text-glow-gold w-full">
-            <span className="shimmer-gold-text text-2xl sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
+          <h1 className="flex flex-col items-center gap-2 sm:gap-4 font-luxury-serif uppercase text-center leading-none w-full">
+            <span className="shimmer-gold-text text-lg sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
               WELCOME TO
             </span>
-            <span className="shimmer-gold-text text-5xl sm:text-6xl md:text-7xl tracking-[0.15em] font-bold">
+            <span className="shimmer-gold-text text-4xl sm:text-6xl md:text-7xl tracking-[0.15em] font-bold">
               MARKHOR
             </span>
-            <span className="shimmer-gold-text text-2xl sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
+            <span className="shimmer-gold-text text-lg sm:text-3xl md:text-4xl tracking-[0.35em] font-medium">
               COLLECTIONS
             </span>
           </h1>
@@ -150,13 +178,13 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }} 
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto"
+            className="flex flex-row items-center justify-center gap-3 mt-7 sm:mt-10 w-full sm:w-auto"
           >
-            <button onClick={() => onViewChange('shop')} className="btn-lux-primary-pill w-full sm:w-auto px-8 py-3.5 font-luxury-sans font-bold text-[11px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer flex items-center justify-center gap-2 group">
-              <span>Explore Collection</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            <button onClick={() => onViewChange('shop')} className="btn-lux-primary-pill px-5 sm:px-8 py-3 font-luxury-sans font-bold text-[10px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer flex items-center justify-center gap-1.5 group">
+              <span>Explore</span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button onClick={() => onViewChange('about')} className="btn-lux-secondary-pill w-full sm:w-auto px-8 py-3.5 font-luxury-sans font-medium text-[11px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer">
+            <button onClick={() => onViewChange('about')} className="btn-lux-secondary-pill px-5 sm:px-8 py-3 font-luxury-sans font-medium text-[10px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer">
               Our Heritage
             </button>
           </motion.div>
@@ -164,7 +192,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 2. STORE BRAND PHILOSOPHY */}
-      <section className="py-24 bg-[#F7E7CE] relative overflow-hidden">
+      <section className="py-14 sm:py-24 bg-[#F7E7CE] relative overflow-hidden">
         <div className="absolute -top-[100px] -right-[100px] w-[500px] h-[500px] rounded-full border border-[#C9A84C]/20" />
         
         <motion.div 
@@ -172,22 +200,22 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.3 }} 
           variants={slowFadeUp}
-          className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10"
+          className="max-w-7xl mx-auto px-5 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-20 items-center relative z-10"
         >
-          <div className="space-y-6">
-            <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold block font-luxury-sans">THE FABRIC STANDARD</span>
-            <h2 className="font-luxury-serif text-4xl sm:text-5xl text-[#000000] font-bold leading-tight">Premium Materials,<br /><span className="italic font-light">Flawless Fit</span></h2>
+          <div className="space-y-4 sm:space-y-6">
+            <span className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold block font-luxury-sans">THE FABRIC STANDARD</span>
+            <h2 className="font-luxury-serif text-2xl sm:text-5xl text-[#000000] font-bold leading-tight">Premium Materials,<br /><span className="italic font-light">Flawless Fit</span></h2>
             
-            <blockquote className="font-luxury-serif text-2xl italic text-[#000000] border-l-4 border-[#D4AF37] pl-6 my-8 leading-relaxed">
+            <blockquote className="font-luxury-serif text-base sm:text-2xl italic text-[#000000] border-l-4 border-[#D4AF37] pl-4 sm:pl-6 my-4 sm:my-8 leading-relaxed">
               "We don't just sell clothes; we upgrade your everyday style wardrobe."
             </blockquote>
             
-            <p className="font-luxury-sans text-[15px] leading-loose text-[#000000]/80 font-medium max-w-md">
+            <p className="font-luxury-sans text-[13px] sm:text-[15px] leading-loose text-[#000000]/80 font-medium max-w-md">
               At Markhor Collections, we focus on sourcing high-grade fabrics, durable stitching, and modern designs. Every piece in our store is carefully engineered to ensure maximum comfort and long-lasting premium wear.
             </p>
           </div>
           
-          <div className="relative aspect-square">
+          <div className="relative aspect-square max-w-xs mx-auto w-full sm:max-w-none">
             <img 
               src="/5logo.jpeg" 
               alt="Markhor Collections Philosophy" 
@@ -199,21 +227,21 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 3. STORE CATEGORIES */}
-      <section className="py-24 bg-[#FAF9F6]">
+      <section className="py-14 sm:py-24 bg-[#FAF9F6]">
         <motion.div 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.2 }} 
-          className="max-w-7xl mx-auto px-6 text-center"
+          className="max-w-7xl mx-auto px-5 sm:px-6 text-center"
         >
-          <motion.span variants={slowFadeUp} className="text-[10px] tracking-[0.4em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">STORE CATEGORIES</motion.span>
-          <motion.h2 variants={slowFadeUp} className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold mb-16 tracking-wide uppercase">Explore Our Outfits</motion.h2>
+          <motion.span variants={slowFadeUp} className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-[#000000] font-bold mb-2 sm:mb-3 block font-luxury-sans">STORE CATEGORIES</motion.span>
+          <motion.h2 variants={slowFadeUp} className="font-luxury-serif text-2xl sm:text-4xl text-[#000000] font-bold mb-8 sm:mb-16 tracking-wide uppercase">Explore Our Outfits</motion.h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {[
               { icon: Shirt, title: "Premium Essentials", desc: "Everyday luxury staples including high-quality basic tees, polos, and classic shirts designed for all-day comfort." },
               { icon: Layers, title: "Modern Streetwear", desc: "Trend-forward drops featuring perfect oversized silhouettes, heavy cotton hoodies, and signature aesthetics." },
-              { icon: Diamond, title: "Tailored Trousers & Tights", desc: "Premium bottom-wear ranging from structural cargo pants to highly tailored casual trousers for the perfect fit." }
+              { icon: Diamond, title: "Tailored Trousers", desc: "Premium bottom-wear ranging from structural cargo pants to highly tailored casual trousers for the perfect fit." }
             ].map((item, index) => (
               <motion.div 
                 key={index}
@@ -221,11 +249,11 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
                   hidden: { opacity: 0, y: 30 },
                   visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: index * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
-                className="bg-[#F7E7CE] px-10 py-14 rounded-xl border border-[#C9A84C]/20 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center relative"
+                className="bg-[#F7E7CE] px-6 sm:px-10 py-8 sm:py-14 rounded-xl border border-[#C9A84C]/20 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center relative"
               >
-                <item.icon className="w-12 h-12 text-[#000000] mb-6 stroke-[1.2]" />
-                <h3 className="font-luxury-serif text-[1.4rem] text-[#000000] mb-4 font-bold tracking-wide">{item.title}</h3>
-                <p className="font-luxury-sans text-[#000000]/85 text-[15px] leading-loose font-medium">{item.desc}</p>
+                <item.icon className="w-8 h-8 sm:w-12 sm:h-12 text-[#000000] mb-3 sm:mb-6 stroke-[1.2]" />
+                <h3 className="font-luxury-serif text-base sm:text-[1.4rem] text-[#000000] mb-2 sm:mb-4 font-bold tracking-wide">{item.title}</h3>
+                <p className="font-luxury-sans text-[#000000]/85 text-[13px] sm:text-[15px] leading-relaxed sm:leading-loose font-medium">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -233,24 +261,25 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 4. FEATURED PRODUCTS */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-14 sm:py-24 px-5 sm:px-6 bg-white">
         <motion.div 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.2 }}
           className="max-w-7xl mx-auto"
         >
-          <motion.div variants={slowFadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-14 border-b border-[#000000]/10 pb-8">
+          <motion.div variants={slowFadeUp} className="flex flex-row justify-between items-end gap-4 mb-8 sm:mb-14 border-b border-[#000000]/10 pb-5 sm:pb-8">
             <div>
-              <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">FEATURED RELEASES</span>
-              <h2 className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold tracking-wide">Trending In Store</h2>
+              <span className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-1 sm:mb-3 block font-luxury-sans">FEATURED RELEASES</span>
+              <h2 className="font-luxury-serif text-xl sm:text-4xl text-[#000000] font-bold tracking-wide">Trending In Store</h2>
             </div>
-            <button onClick={() => onViewChange('shop')} className="px-6 py-3 border border-[#000000] text-[#000000] text-[10px] font-luxury-sans font-bold tracking-[0.2em] uppercase hover:bg-[#000000] hover:text-white transition-all cursor-pointer rounded-full bg-transparent">
-              VIEW ALL PRODUCTS
+            <button onClick={() => onViewChange('shop')} className="px-4 sm:px-6 py-2.5 sm:py-3 border border-[#000000] text-[#000000] text-[9px] sm:text-[10px] font-luxury-sans font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase hover:bg-[#000000] hover:text-white transition-all cursor-pointer rounded-full bg-transparent whitespace-nowrap flex-shrink-0">
+              VIEW ALL
             </button>
           </motion.div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          {/* Mobile: horizontal scroll | Desktop: 3-col grid */}
+          <div className="products-scroll">
             {products.slice(0, 3).map((p, index) => (
               <motion.div 
                 key={p.id} 
@@ -258,20 +287,20 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
                   hidden: { opacity: 0, y: 30 },
                   visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: index * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
-                className="group cursor-pointer flex flex-col" 
+                className="product-card group cursor-pointer flex flex-col" 
                 onClick={() => handleProductClick(p)}
               >
-                <div className="aspect-[3/4] overflow-hidden bg-[#FAF9F6] mb-5 relative border border-[#000000]/10 rounded-lg">
+                <div className="aspect-[3/4] overflow-hidden bg-[#FAF9F6] mb-3 sm:mb-5 relative border border-[#000000]/10 rounded-lg">
                   <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-[#000000]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="bg-white text-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] py-3 px-6 shadow-xl rounded-sm">VIEW DETAILS</span>
+                    <span className="bg-white text-[#000000] font-luxury-sans text-[9px] font-bold tracking-[0.2em] py-2.5 px-5 shadow-xl rounded-sm">VIEW</span>
                   </div>
                 </div>
-                <h3 className="font-luxury-serif text-lg mb-1.5 text-[#000000] tracking-wide font-bold">{p.name}</h3>
-                <p className="font-luxury-sans text-[#000000]/80 font-semibold text-sm mb-4">RS. {p.price.toLocaleString()}</p>
+                <h3 className="font-luxury-serif text-sm sm:text-lg mb-1 sm:mb-1.5 text-[#000000] tracking-wide font-bold leading-snug">{p.name}</h3>
+                <p className="font-luxury-sans text-[#000000]/80 font-semibold text-xs sm:text-sm mb-3 sm:mb-4">RS. {p.price.toLocaleString()}</p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); addToCart(p, p.sizes?.[0] || 'M', p.colors?.[0] || 'Black'); }} 
-                  className="w-full py-3.5 border border-[#000000]/20 hover:border-[#000000] font-luxury-sans text-[10px] font-bold tracking-[0.2em] uppercase bg-transparent text-[#000000] hover:bg-[#000000] hover:text-white transition-all mt-auto rounded-full bg-transparent"
+                  className="w-full py-2.5 sm:py-3.5 border border-[#000000]/20 hover:border-[#000000] font-luxury-sans text-[9px] sm:text-[10px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase bg-transparent text-[#000000] hover:bg-[#000000] hover:text-white transition-all mt-auto rounded-full"
                 >
                   ADD TO CART
                 </button>
@@ -282,7 +311,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 5. CUSTOMER SHOPPING BENEFITS */}
-      <section className="py-24 bg-[#000000] relative overflow-hidden px-6">
+      <section className="py-14 sm:py-24 bg-[#000000] relative overflow-hidden px-5 sm:px-6">
         <div className="absolute -top-[150px] -right-[150px] w-[400px] h-[400px] border border-[#C9A84C]/10 rounded-full" />
         
         <motion.div 
@@ -291,10 +320,10 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           viewport={{ once: true, amount: 0.2 }}
           className="max-w-7xl mx-auto relative z-10 text-center"
         >
-          <span className="text-[10px] tracking-[0.35em] uppercase text-[#D4AF37] font-bold mb-3 block font-luxury-sans">SHOP WITH CONFIDENCE</span>
-          <h2 className="font-luxury-serif text-3xl sm:text-4xl text-white font-bold tracking-wide mb-16 uppercase">Our Premium Store Services</h2>
+          <span className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-[#D4AF37] font-bold mb-2 sm:mb-3 block font-luxury-sans">SHOP WITH CONFIDENCE</span>
+          <h2 className="font-luxury-serif text-2xl sm:text-4xl text-white font-bold tracking-wide mb-8 sm:mb-16 uppercase">Our Premium Store Services</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
             {[
               { icon: Truck, title: "Free Delivery Nationwide", desc: "Enjoy completely free express shipping across Pakistan on every order you place." },
               { icon: Navigation, title: "Instant Tracked Dispatch", desc: "Track your clothing order in real-time right from our warehouse straight to your doorstep." },
@@ -306,13 +335,13 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
                   hidden: { opacity: 0, y: 30 },
                   visible: { opacity: 1, y: 0, transition: { duration: 1.5, delay: i * 0.2, ease: [0.25, 0.8, 0.25, 1] } }
                 }}
-                className="bg-white/5 border border-white/10 p-10 rounded-xl flex flex-col items-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 hover:-translate-y-1 transition-all duration-300 backdrop-blur-md group"
+                className="bg-white/5 border border-white/10 px-6 py-7 sm:p-10 rounded-xl flex flex-col items-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 hover:-translate-y-1 transition-all duration-300 backdrop-blur-md group"
               >
-                <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-[#BF953F] to-[#AA771C] text-white flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(201,168,76,0.3)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                  <ben.icon className="w-8 h-8 stroke-[1.5]" />
+                <div className="w-12 h-12 sm:w-[72px] sm:h-[72px] rounded-full bg-gradient-to-br from-[#BF953F] to-[#AA771C] text-white flex items-center justify-center mb-4 sm:mb-6 shadow-[0_0_20px_rgba(201,168,76,0.3)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                  <ben.icon className="w-5 h-5 sm:w-8 sm:h-8 stroke-[1.5]" />
                 </div>
-                <h3 className="font-luxury-serif text-[1.2rem] text-white mb-3 tracking-wide font-bold">{ben.title}</h3>
-                <p className="font-luxury-sans text-white/60 text-[14px] leading-loose font-medium max-w-xs">{ben.desc}</p>
+                <h3 className="font-luxury-serif text-base sm:text-[1.2rem] text-white mb-2 sm:mb-3 tracking-wide font-bold">{ben.title}</h3>
+                <p className="font-luxury-sans text-white/60 text-[12px] sm:text-[14px] leading-relaxed sm:leading-loose font-medium max-w-xs">{ben.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -320,19 +349,19 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 6. WHAT OUR CUSTOMERS SAY */}
-      <section className="py-24 bg-[#F7E7CE] overflow-hidden">
+      <section className="py-14 sm:py-24 bg-[#F7E7CE] overflow-hidden">
         <motion.div 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.3 }} 
           variants={slowFadeUp}
-          className="max-w-4xl mx-auto px-6 text-center"
+          className="max-w-4xl mx-auto px-5 sm:px-6 text-center"
         >
-          <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">CUSTOMER REVIEWS</span>
-          <h2 className="font-luxury-serif text-3xl sm:text-4xl text-[#000000] font-bold tracking-wide mb-14 uppercase">Feedback From Our Buyers</h2>
+          <span className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-2 sm:mb-3 block font-luxury-sans">CUSTOMER REVIEWS</span>
+          <h2 className="font-luxury-serif text-2xl sm:text-4xl text-[#000000] font-bold tracking-wide mb-8 sm:mb-14 uppercase">Feedback From Our Buyers</h2>
           
-          <div className="bg-white rounded-xl p-10 sm:p-16 relative shadow-[0_10px_30px_rgba(0,0,0,0.05)] min-h-[340px] flex flex-col justify-center max-w-[700px] mx-auto">
-             <span className="absolute -top-6 left-6 text-[8rem] text-[#D4AF37] opacity-15 leading-none select-none font-luxury-serif">“</span>
+          <div className="bg-white rounded-xl p-7 sm:p-16 relative shadow-[0_10px_30px_rgba(0,0,0,0.05)] min-h-[260px] sm:min-h-[340px] flex flex-col justify-center max-w-[700px] mx-auto">
+             <span className="absolute -top-5 sm:-top-6 left-4 sm:left-6 text-[6rem] sm:text-[8rem] text-[#D4AF37] opacity-15 leading-none select-none font-luxury-serif">"</span>
              
              <div className="relative overflow-hidden flex-1 flex flex-col justify-center z-10">
                <AnimatePresence mode="wait">
@@ -344,28 +373,28 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
                    transition={{ duration: 0.5, ease: "easeOut" }}
                    className="w-full"
                  >
-                   <p className="font-luxury-serif text-[1.4rem] font-light italic text-[#000000] leading-relaxed mb-8">
+                   <p className="font-luxury-serif text-base sm:text-[1.4rem] font-light italic text-[#000000] leading-relaxed mb-5 sm:mb-8">
                      "{testimonials[activeTestimonial].quote}"
                    </p>
                    <div className="flex flex-col items-center">
-                      <h4 className="font-luxury-sans font-bold tracking-[0.18em] text-[12px] text-[#000000] uppercase">{testimonials[activeTestimonial].name}</h4>
+                      <h4 className="font-luxury-sans font-bold tracking-[0.18em] text-[11px] sm:text-[12px] text-[#000000] uppercase">{testimonials[activeTestimonial].name}</h4>
                       <p className="font-luxury-sans text-[10px] text-[#000000]/60 uppercase tracking-wider mt-1">{testimonials[activeTestimonial].role}</p>
                    </div>
                  </motion.div>
                </AnimatePresence>
              </div>
 
-             <div className="flex gap-1.5 mt-6 justify-center">
-                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />)}
+             <div className="flex gap-1 sm:gap-1.5 mt-5 sm:mt-6 justify-center">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-[#D4AF37] text-[#D4AF37]" />)}
              </div>
           </div>
           
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex justify-center gap-2 mt-6 sm:mt-8">
             {testimonials.map((_, idx) => (
               <button 
                 key={idx} 
                 onClick={() => setActiveTestimonial(idx)} 
-                className={`h-2 transition-all duration-300 cursor-pointer rounded-full ${activeTestimonial === idx ? 'w-8 bg-[#D4AF37] scale-110' : 'w-2 bg-[#000000]/20'}`} 
+                className={`h-1.5 sm:h-2 transition-all duration-300 cursor-pointer rounded-full ${activeTestimonial === idx ? 'w-6 sm:w-8 bg-[#D4AF37] scale-110' : 'w-1.5 sm:w-2 bg-[#000000]/20'}`} 
               />
             ))}
           </div>
@@ -373,37 +402,37 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 7. FAQ'S SECTION */}
-      <section className="py-24 bg-white px-6">
+      <section className="py-14 sm:py-24 bg-white px-5 sm:px-6">
         <motion.div 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.3 }} 
           variants={slowFadeUp}
-          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16"
+          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-16"
         >
           <div className="lg:col-span-5">
-            <span className="text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-3 block font-luxury-sans">STORE HELP DESK</span>
-            <h2 className="font-luxury-serif text-4xl text-[#000000] font-bold leading-tight mb-6">Got Any<br />Questions?</h2>
-            <div className="w-12 h-[2px] bg-[#000000] mb-6" />
-            <p className="font-luxury-sans text-[#000000]/70 font-medium text-[14px] leading-loose max-w-xs mb-8">Can't find what you are looking for? Contact our customer support team directly for fast assistance with your order.</p>
-            <button onClick={() => onViewChange('contact')} className="bg-[#000000] text-white px-8 py-4 font-luxury-sans text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2.5 hover:bg-[#D4AF37] transition-colors cursor-pointer rounded-full bg-transparent">
+            <span className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-[#000000] font-bold mb-2 sm:mb-3 block font-luxury-sans">STORE HELP DESK</span>
+            <h2 className="font-luxury-serif text-2xl sm:text-4xl text-[#000000] font-bold leading-tight mb-3 sm:mb-6">Got Any<br />Questions?</h2>
+            <div className="w-10 sm:w-12 h-[2px] bg-[#000000] mb-3 sm:mb-6" />
+            <p className="font-luxury-sans text-[#000000]/70 font-medium text-[13px] sm:text-[14px] leading-loose max-w-xs mb-5 sm:mb-8">Can't find what you are looking for? Contact our customer support team directly for fast assistance.</p>
+            <button onClick={() => onViewChange('contact')} className="bg-[#000000] text-white px-6 sm:px-8 py-3 sm:py-4 font-luxury-sans text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-2.5 hover:bg-[#D4AF37] transition-colors cursor-pointer rounded-full">
               CONTACT SUPPORT
             </button>
           </div>
           
-          <div className="lg:col-span-7 flex flex-col gap-4">
+          <div className="lg:col-span-7 flex flex-col gap-3 sm:gap-4">
             {faqList.map((faq, index) => {
               const isOpen = openFaq === index;
               return (
                 <div key={index} className={`border rounded-md overflow-hidden transition-all duration-300 ${isOpen ? 'border-[#D4AF37] shadow-[0_0_15px_rgba(201,168,76,0.15)] bg-[#F7E7CE]' : 'border-gray-200 bg-transparent'}`}>
-                  <button onClick={() => setOpenFaq(isOpen ? null : index)} className="w-full text-left py-5 px-6 flex justify-between items-center group cursor-pointer">
-                    <span className={`font-luxury-sans font-bold text-[14px] tracking-wider uppercase ${isOpen ? 'text-[#000000]' : 'text-[#000000]/90'}`}>{faq.q}</span>
+                  <button onClick={() => setOpenFaq(isOpen ? null : index)} className="w-full text-left py-4 sm:py-5 px-4 sm:px-6 flex justify-between items-center group cursor-pointer gap-3">
+                    <span className={`font-luxury-sans font-bold text-[12px] sm:text-[14px] tracking-wider uppercase ${isOpen ? 'text-[#000000]' : 'text-[#000000]/90'}`}>{faq.q}</span>
                     <ChevronDown className={`w-4 h-4 text-[#D4AF37] transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <AnimatePresence initial={false}>
                     {isOpen && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
-                        <div className="px-6 pb-5 text-[14px] text-[#000000]/80 leading-loose font-medium font-luxury-sans pt-1 flex gap-3">
+                        <div className="px-4 sm:px-6 pb-4 sm:pb-5 text-[13px] sm:text-[14px] text-[#000000]/80 leading-loose font-medium font-luxury-sans pt-1 flex gap-3">
                           <CornerDownRight className="w-4 h-4 text-[#000000]/50 flex-shrink-0 mt-1.5" />
                           <p>{faq.a}</p>
                         </div>
@@ -418,7 +447,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
       </section>
 
       {/* 8. BOTTOM CTA STRIP */}
-      <section className="py-24 bg-[#000000] text-center relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-[#000000] text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center opacity-[0.08]" style={{ backgroundImage: `url('/2.jpeg')` }} />
         
         <motion.div 
@@ -426,14 +455,13 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
           whileInView="visible" 
           viewport={{ once: true, amount: 0.5 }} 
           variants={slowFadeUp}
-          className="relative z-10 max-w-4xl mx-auto px-6 flex flex-col items-center"
+          className="relative z-10 max-w-4xl mx-auto px-5 sm:px-6 flex flex-col items-center"
         >
-           <span className="text-[10px] tracking-[0.4em] uppercase text-[#D4AF37] font-bold mb-3 block font-luxury-sans">UPGRADE YOUR STYLE</span>
-           <h2 className="font-luxury-serif text-3xl sm:text-5xl text-white font-bold mb-6 tracking-wide uppercase">Shop Premium Wardrobe</h2>
-           <p className="font-luxury-serif italic text-white/70 font-medium text-lg sm:text-xl max-w-lg mb-10 leading-relaxed">Discover a highly curated selection of outfits made for ultimate comfort and statement modern fits.</p>
+           <span className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-[#D4AF37] font-bold mb-2 sm:mb-3 block font-luxury-sans">UPGRADE YOUR STYLE</span>
+           <h2 className="font-luxury-serif text-2xl sm:text-5xl text-white font-bold mb-3 sm:mb-6 tracking-wide uppercase">Shop Premium Wardrobe</h2>
+           <p className="font-luxury-serif italic text-white/70 font-medium text-base sm:text-xl max-w-lg mb-7 sm:mb-10 leading-relaxed">Discover a highly curated selection of outfits made for ultimate comfort and statement modern fits.</p>
            
-           {/* CTA button with golden shimmer animation */}
-           <button onClick={() => onViewChange('shop')} className="px-10 py-4.5 font-luxury-sans font-bold text-xs tracking-[0.25em] uppercase cursor-pointer rounded-full shimmer-gold-btn text-[#000000]">
+           <button onClick={() => onViewChange('shop')} className="px-8 sm:px-10 py-3.5 sm:py-4.5 font-luxury-sans font-bold text-[10px] sm:text-xs tracking-[0.25em] uppercase cursor-pointer rounded-full shimmer-gold-btn text-[#000000]">
               BROWSE ALL CLOTHES
            </button>
         </motion.div>

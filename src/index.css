@@ -7,12 +7,17 @@
   --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Base resets & scrollbars matching pure white/alabaster excellence */
+html {
+  overscroll-behavior: none; /* Yeh page ko top/bottom se khinchne se mukammal rok dega */
+  background-color: #050505; /* Fallback for absolute edge cases */
+}
+
 body {
   font-family: var(--font-sans);
   background-color: #FAF9F6;
   color: #111111;
   overflow-x: hidden;
+  overscroll-behavior: none; /* Safari/iOS ke liye double lock */
 }
 
 /* Custom premium scrollbar style */
