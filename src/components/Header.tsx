@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { Product, ViewType } from '../types';
-import { ShoppingBag, Search, Menu, X, Lock } from 'lucide-react';
+import { ShoppingBag, Search, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   currentView: ViewType;
@@ -216,21 +216,12 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onViewChange, onSel
                 </span>
               </button>
 
-              {/* VIP Lock icon */}
-              <button
-                onClick={() => { onViewChange('admin'); setIsMobileMenuOpen(false); }}
-                className="relative text-[#D4AF37] hover:text-[#FFF1CE] transition-all duration-300 p-2 cursor-pointer flex items-center justify-center"
-                title="VIP Owner Desk"
-              >
-                <Lock className="w-[21px] h-[21px] sm:w-6 sm:h-6 stroke-[1.3]" />
-              </button>
-
             </div>
           </div>
         </header>
       </div>
 
-      {/* Mobile Drawer — admin tab removed since lock icon is now in header */}
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-x-0 bottom-0 bg-[#050505]/98 backdrop-blur-2xl z-40 flex flex-col border-t border-[#D4AF37]/15 overflow-y-auto pt-6"
              style={{ top: scrolled ? '70px' : '85px' }}

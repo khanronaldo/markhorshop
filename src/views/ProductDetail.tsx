@@ -60,7 +60,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
   const [loadingReview, setLoadingReview] = useState(false);
 
   // Accordion active flags
-  const [expandedSection, setExpandedSection] = useState<string | null>('specifications');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -251,39 +251,8 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
 
             {/* EXPANDABLE DETAILS ACCORDIONS GROUP */}
             <div className="mt-6 sm:mt-8 flex flex-col gap-3 font-sans">
-              
-              {/* Acc 1: Specifications */}
-              <div className="rounded-2xl overflow-hidden bg-white/60 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:bg-white/90">
-                <button 
-                  onClick={() => setExpandedSection(expandedSection === 'specifications' ? null : 'specifications')}
-                  className="w-full py-5 px-6 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-[#111111] cursor-pointer"
-                >
-                  <span className="flex items-center gap-2"><Globe className="w-4.5 h-4.5 text-[#BF953F]" /> Spec Index Sheets</span>
-                  <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform duration-300 ${expandedSection === 'specifications' ? 'rotate-180' : ''}`} />
-                </button>
-                
-                <AnimatePresence>
-                  {expandedSection === 'specifications' && (
-                    <motion.div 
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden border-t border-black/5"
-                    >
-                      <div className="flex flex-col text-xs font-light font-sans bg-white/40">
-                        {Object.entries(product.specifications).map(([key, value]) => (
-                          <div key={key} className="grid grid-cols-12 px-6 py-4 border-b border-black/5 last:border-0 leading-relaxed items-center">
-                            <span className="col-span-4 sm:col-span-5 text-neutral-500 uppercase tracking-widest font-semibold text-[10px]">{key}</span>
-                            <span className="col-span-8 sm:col-span-7 text-[#111111] font-medium">{value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
 
-              {/* Acc 2: Care & Maintenance */}
+              {/* Acc: Care & Maintenance */}
               <div className="rounded-2xl overflow-hidden bg-white/60 backdrop-blur-sm border border-black/5 shadow-sm transition-all hover:bg-white/90">
                 <button 
                   onClick={() => setExpandedSection(expandedSection === 'care' ? null : 'care')}

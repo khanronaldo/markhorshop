@@ -375,7 +375,7 @@ export const Shop: React.FC<ShopProps> = ({ onViewChange, onSelectProduct }) => 
               ) : (
                 <div className="border border-[#E3DDD3] bg-[#FFFFFF] text-center py-24 rounded-2xl flex flex-col items-center justify-center gap-4">
                   <HelpCircle className="w-12 h-12 text-[#B58A3D]/40" />
-                  <h3 className="font-serif text-xl text-[#1C1A17]">No Selections Found</h3>
+                  <h3 className="font-serif text-xl text-[#1C1A17]">Coming Soon</h3>
                   <button 
                     onClick={clearAllFilters}
                     className="px-6 py-3 bg-[#1C1A17] text-[#BF953F] hover:bg-black text-[10px] uppercase font-bold tracking-widest rounded-xl transition-all mt-2 cursor-pointer"

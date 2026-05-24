@@ -58,11 +58,6 @@ export const Admin: React.FC = () => {
     badge: 'New',
     description: '',
     shipping: 'Free Shipping (2-3 Business Days)',
-    specifications: {
-      'Composition': '100% Premium Cotton',
-      'Fit': 'Regular Fit',
-      'Origin': 'Made in Pakistan'
-    },
     gallery: []
   });
 
@@ -91,11 +86,6 @@ export const Admin: React.FC = () => {
       badge: '',
       description: '',
       shipping: 'Free Shipping (2-3 Business Days)',
-      specifications: {
-        'Composition': '100% Premium Cotton',
-        'Fit': 'Regular Fit',
-        'Origin': 'Made in Pakistan'
-      },
       gallery: []
     });
     setEditingId(null);
@@ -179,10 +169,6 @@ export const Admin: React.FC = () => {
       badge: formData.badge || undefined,
       description: formData.description || 'Premium product from Markhor Collections.',
       shipping: formData.shipping || 'Free Shipping (2-3 Business Days)',
-      specifications: formData.specifications || {
-        'Composition': '100% Premium Cotton',
-        'Origin': 'Made in Pakistan'
-      },
       gallery: formData.gallery || []
     };
     if (editingId) {
@@ -645,43 +631,6 @@ export const Admin: React.FC = () => {
                   )}
                 </div>
 
-                {/* SPECIFICATIONS */}
-                <div className="border-t border-[#E3DDD3] pt-4 sm:pt-5">
-                  <h4 className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] text-[#BF953F] uppercase mb-3">Product Specifications</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-semibold text-[#59534E] uppercase tracking-wider">Material / Fabric</span>
-                      <input
-                        type="text"
-                        placeholder="e.g. 100% Linen"
-                        value={formData.specifications?.['Composition'] || ''}
-                        onChange={(e) => setFormData({ ...formData, specifications: { ...formData.specifications, 'Composition': e.target.value } })}
-                        className="text-xs sm:text-sm text-neutral-800 bg-[#F5F5F5] border border-[#E3DDD3] py-2.5 px-3 rounded-lg outline-none focus:bg-white focus:border-[#BF953F] transition-all"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-semibold text-[#59534E] uppercase tracking-wider">Fit Type</span>
-                      <input
-                        type="text"
-                        placeholder="e.g. Regular Fit"
-                        value={formData.specifications?.['Fit'] || ''}
-                        onChange={(e) => setFormData({ ...formData, specifications: { ...formData.specifications, 'Fit': e.target.value } })}
-                        className="text-xs sm:text-sm text-neutral-800 bg-[#F5F5F5] border border-[#E3DDD3] py-2.5 px-3 rounded-lg outline-none focus:bg-white focus:border-[#BF953F] transition-all"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-semibold text-[#59534E] uppercase tracking-wider">Made In</span>
-                      <input
-                        type="text"
-                        placeholder="e.g. Made in Pakistan"
-                        value={formData.specifications?.['Origin'] || ''}
-                        onChange={(e) => setFormData({ ...formData, specifications: { ...formData.specifications, 'Origin': e.target.value } })}
-                        className="text-xs sm:text-sm text-neutral-800 bg-[#F5F5F5] border border-[#E3DDD3] py-2.5 px-3 rounded-lg outline-none focus:bg-white focus:border-[#BF953F] transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-
               </form>
             </section>
 
@@ -749,11 +698,6 @@ export const Admin: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                    </div>
-                    <div className="border-t border-neutral-100 pt-3 text-[9px] sm:text-[10px] flex flex-col divide-y divide-neutral-100 bg-[#FAF9F6] p-3 rounded-lg">
-                      <div className="py-1.5 flex justify-between"><span className="text-neutral-500">Material</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Composition'] || 'N/A'}</span></div>
-                      <div className="py-1.5 flex justify-between"><span className="text-neutral-500">Fit</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Fit'] || 'N/A'}</span></div>
-                      <div className="py-1.5 flex justify-between"><span className="text-neutral-500">Origin</span><span className="font-semibold text-neutral-800">{formData.specifications?.['Origin'] || 'N/A'}</span></div>
                     </div>
                   </div>
                 )}

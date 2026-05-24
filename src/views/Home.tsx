@@ -185,7 +185,7 @@ export const Home: React.FC<HomeProps> = ({ onViewChange, onSelectProduct }) => 
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </button>
             <button onClick={() => onViewChange('about')} className="btn-lux-secondary-pill px-5 sm:px-8 py-3 font-luxury-sans font-medium text-[10px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer">
-              Our Heritage
+              About Us
             </button>
           </motion.div>
         </motion.div>
