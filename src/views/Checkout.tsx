@@ -18,20 +18,14 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
     clearCart 
   } = useCart();
 
-  // Multi-step phase state: 'cart' | 'details' | 'completed'
   const [step, setStep] = useState<'cart' | 'details' | 'completed'>('cart');
-
-  // Customer billing details state
   const [custName, setCustName] = useState('');
   const [custPhone, setCustPhone] = useState('');
   const [custEmail, setCustEmail] = useState('');
   const [custCity, setCustCity] = useState('');
   const [custAddress, setCustAddress] = useState('');
-
-  // Selected payment parameters
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentDetail, setPaymentDetail] = useState('');
-
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const ADMIN_WHATSAPP = '923555107132';
@@ -47,25 +41,31 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
       return;
     }
 
-    // Build invoice payload body
+    // 1. Sleek Luxury WhatsApp Message Formatting (No spammy emojis)
     let itemsInvoice = '';
     cartItems.forEach((item, idx) => {
-      itemsInvoice += `${idx + 1}. ${item.product.name} [Size: ${item.selectedSize}, Color: ${item.selectedColor}] x${item.quantity} = Rs. ${(item.product.price * item.quantity).toLocaleString()}\n`;
+      itemsInvoice += `*${idx + 1}. ${item.product.name}*\n`;
+      itemsInvoice += `   [Size: ${item.selectedSize} | Color: ${item.selectedColor}]\n`;
+      itemsInvoice += `   Qty: ${item.quantity} × Rs. ${item.product.price.toLocaleString()} = Rs. ${(item.product.price * item.quantity).toLocaleString()}\n\n`;
     });
 
     const netInvoice = 
-      `🛍️ *NEW LUXURY ORDER — Markhor Collections*\n\n` +
-      `👤 *CUSTOMER:* ${custName}\n` +
-      `📞 *PHONE:* ${custPhone}\n` +
-      `📧 *EMAIL:* ${custEmail || 'Not provided'}\n` +
-      `📍 *ADDRESS:* ${custAddress}, ${custCity}\n\n` +
-      `🛒 *ITEMS SUMMARY:*\n${itemsInvoice}\n` +
-      `💰 *SUBTOTAL:* Rs. ${cartSubtotal.toLocaleString()}\n` +
-      `💳 *PAYMENT METHOD:* ${paymentMethod} (${paymentDetail})\n\n` +
-      `*STATUS:* PENDING DIRECT VERIFICATION CONCIERGE`;
+      `🏛️ *MARKHOR COLLECTIONS — ONLINE ORDER*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `*CUSTOMER PROFILE*\n` +
+      `• *Name:* ${custName}\n` +
+      `• *Phone:* ${custPhone}\n` +
+      `• *Email:* ${custEmail || 'Not provided'}\n` +
+      `• *Address:* ${custAddress}, ${custCity}\n\n` +
+      `*ORDER SUMMARY*\n` +
+      `${itemsInvoice}` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `*GRAND TOTAL:* Rs. ${cartSubtotal.toLocaleString()}\n` +
+      `*PAYMENT METHOD:* ${paymentMethod} (${paymentDetail})\n\n` +
+      `_Order holds a pending status concierge verification._`;
 
+    // 2. Netlify Background Form Submission
     try {
-      // Netlify silent form submission pipeline simulation
       const formEl = document.createElement('form');
       formEl.setAttribute('name', 'orders');
       formEl.setAttribute('method', 'POST');
@@ -100,12 +100,15 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
 
       document.body.removeChild(formEl);
     } catch (e) {
-      console.error('Silent post failed, fallback to whatsapp direct', e);
+      console.error('Silent post failed, falling back to instant redirect', e);
     }
 
-    // Direct redirection to WhatsApp
+    // 3. iPhone & Android Universal Deep-Link Fix
     const waLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(netInvoice)}`;
-    window.open(waLink, '_blank');
+    
+    // window.open ko Safari block kar deta hai async network call k baad. 
+    // window.location.href bina block kiye seedha WhatsApp App open karega iPhone par.
+    window.location.href = waLink;
 
     setStep('completed');
   };
@@ -150,7 +153,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
   return (
     <div className="bg-[#F7E7CE] text-[#1C1A17] min-h-screen selection:bg-[#BF953F]/30 antialiased">
       
-      {/* HIGH-END VIGNETTE HERO BANNER */}
+      {/* HERO BANNER */}
       <div 
         className="relative min-h-[300px] sm:min-h-[480px] flex items-center justify-center overflow-hidden text-center bg-[#0d0d0d]"
         style={{ 
@@ -160,12 +163,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {/* Soft dark vignette luxury depth overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/60 to-black/85" />
-        {/* Bottom fade matched exactly to checkout background #F7E7CE */}
         <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#F7E7CE] to-transparent" />
         
-        {/* Content Wrapper */}
         <div className="relative z-10 max-w-4xl mx-auto px-4 py-10 sm:py-12 mt-10">
           <span className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-[#BF953F] font-bold mb-3 sm:mb-4 block drop-shadow-sm">
             MARKHOR CONCIERGE
@@ -174,7 +174,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
             Secure Checkout
           </h1>
           <div className="w-12 sm:w-16 h-[1.5px] bg-[#BF953F] mx-auto mb-3 sm:mb-4" />
-          <p className="font-sans text-[#E3DDD3] text-[11px] sm:text-sm max-w-sm sm:max-w-md mx-auto font-light tracking-wide leading-relaxed drop-shadow-sm px-4">
+          <p className="font-sans text-[#E3DDD3] text-[11px] sm:text-sm max-w-sm sm:max-w-md mx-auto font-light tracking-wide Author-relaxed drop-shadow-sm px-4">
             Review your luxury selections and finalize your secure dispatch.
           </p>
         </div>
@@ -184,7 +184,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
       <div className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           
-          {/* Core Steps indicators */}
+          {/* Steps indicators */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-8 sm:mb-10 h-auto sm:h-10 border-b border-[#E3DDD3] pb-4 overflow-x-auto whitespace-nowrap CustomScrollbar">
             <button 
               onClick={() => {
@@ -206,7 +206,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
           </div>
 
           {cartItems.length === 0 ? (
-            /* Empty Bag screen */
             <div className="text-center py-16 sm:py-24 bg-[#FFFFFF] rounded-2xl border border-[#E3DDD3] max-w-lg mx-auto p-6 sm:p-10 shadow-sm">
               <ShoppingCart className="w-10 h-10 sm:w-12 sm:h-12 text-[#E3DDD3] mx-auto mb-5 sm:mb-6" />
               <h3 className="font-serif text-lg sm:text-xl tracking-wide mb-2 sm:mb-3 text-[#1C1A17]">Your shopping bag is empty</h3>
@@ -221,13 +220,11 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
               </button>
             </div>
           ) : (
-            /* Dynamic splits transaction floor grid */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
               
               {/* LEFT: STEP RENDERER */}
               <div className="lg:col-span-8 flex flex-col gap-6 sm:gap-8">
                 {step === 'cart' ? (
-                  /* STEP 1: SHOPPING BAG ITEMS LIST */
                   <div className="bg-[#FFFFFF] border border-[#E3DDD3] rounded-2xl p-5 sm:p-8 shadow-sm">
                     <h3 className="font-serif text-xl sm:text-2xl tracking-tight text-[#1C1A17] mb-5 sm:mb-6 border-b border-[#E3DDD3] pb-4 sm:pb-5">
                       Your Shopping Bag ({cartItems.length})
@@ -256,7 +253,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
                             </div>
                           </div>
 
-                          {/* Increment/Decrement controllers */}
                           <div className="flex flex-row items-center justify-between sm:justify-end gap-4 sm:gap-6 w-full sm:w-auto mt-2 sm:mt-0">
                             <div className="flex items-center border border-[#E3DDD3] rounded-lg overflow-hidden bg-[#F5F5F5] h-9 sm:h-10 w-24 sm:w-28">
                               <button 
@@ -302,7 +298,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
                     </div>
                   </div>
                 ) : (
-                  /* STEP 2: ADDRESS SCHEDULING FORM + PAYMENT PILES */
                   <div className="flex flex-col gap-6 sm:gap-8">
                     
                     {/* Address pile */}
