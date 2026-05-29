@@ -28,6 +28,10 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
   const [paymentDetail, setPaymentDetail] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  // Delivery charges configuration
+  const DELIVERY_CHARGES = 250;
+  const grandTotal = cartSubtotal + DELIVERY_CHARGES;
+
   const ADMIN_WHATSAPP = '923555107132';
 
   const selectPaymentOption = (method: string, detail: string) => {
@@ -60,7 +64,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
       `*ORDER SUMMARY*\n` +
       `${itemsInvoice}` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-      `*GRAND TOTAL:* Rs. ${cartSubtotal.toLocaleString()}\n` +
+      `*SUBTOTAL:* Rs. ${cartSubtotal.toLocaleString()}\n` +
+      `*DELIVERY CHARGES:* Rs. ${DELIVERY_CHARGES.toLocaleString()}\n` +
+      `*GRAND TOTAL:* Rs. ${grandTotal.toLocaleString()}\n` +
       `*PAYMENT METHOD:* ${paymentMethod} (${paymentDetail})\n\n` +
       `_Order holds a pending status concierge verification._`;
 
@@ -87,7 +93,8 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
       appendHiddenInput('customer_address', custAddress);
       appendHiddenInput('order_summary', itemsInvoice);
       appendHiddenInput('payment_method', paymentMethod);
-      appendHiddenInput('total_bill', `Rs. ${cartSubtotal}`);
+      appendHiddenInput('delivery_charges', `Rs. ${DELIVERY_CHARGES}`);
+      appendHiddenInput('total_bill', `Rs. ${grandTotal}`);
 
       document.body.appendChild(formEl);
       
@@ -472,12 +479,12 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
 
                 <div className="flex flex-col gap-3.5 sm:gap-4 text-[11px] sm:text-xs font-normal tracking-wide mb-5 sm:mb-6">
                   <div className="flex justify-between">
-                    <span className="text-[#59534E]">Transit Courier Post</span>
-                    <span className="font-bold text-green-600">FREE COMPLIMENTARY</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-[#59534E]">Subtotal bill</span>
                     <span className="font-bold text-[#1C1A17]">Rs. {cartSubtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#59534E]">Delivery Charges</span>
+                    <span className="font-bold text-[#1C1A17]">Rs. {DELIVERY_CHARGES.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between pb-3.5 sm:pb-4 border-b border-[#E3DDD3]">
                     <span className="text-[#59534E]">Metropolitan taxes</span>
@@ -485,7 +492,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onViewChange, onSelectProduc
                   </div>
                   <div className="flex justify-between items-center text-sm sm:text-base font-semibold text-[#1C1A17] pt-1">
                     <span>Grand Total</span>
-                    <span className="font-sans font-bold text-lg sm:text-xl text-[#B58A3D]">Rs. {cartSubtotal.toLocaleString()}</span>
+                    <span className="font-sans font-bold text-lg sm:text-xl text-[#B58A3D]">Rs. {grandTotal.toLocaleString()}</span>
                   </div>
                 </div>
 

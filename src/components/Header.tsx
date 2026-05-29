@@ -97,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onViewChange, onSel
         }`}>
           <span className="hidden md:inline opacity-70">SUITE FOR THE MODERN JOURNEY</span>
           <span className="hidden md:inline text-[#D4AF37]/30">|</span>
-          <span className="font-medium animate-pulse whitespace-nowrap">FREE EXPRESS SHIPPING NATIONWIDE</span>
+          <span className="font-medium animate-pulse whitespace-nowrap">NATIONWIDE DELIVERY FOR JUST Rs. 250</span>
         </div>
 
         {/* Main Header */}
